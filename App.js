@@ -1,18 +1,34 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { ActivityIndicator, View } from 'react-native';
 
-import LibraryScreen from './screens/Library';
-import WishlistScreen from './screens/Wishlist';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import AuthNavigator from './navigation/AuthNavigator';
+import MainAppNavigator from './navigation/MainAppNavigator';
 
-const Tab = createBottomTabNavigator();
+function AppContent() {
+    const { user, loading } = useAuth();
+
+    if (loading) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" />
+            </View>
+        );
+    }
+
+    return (
+        <NavigationContainer>
+            {user ? <MainAppNavigator /> : <AuthNavigator />}
+        </NavigationContainer>
+    );
+}
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Tab.Navigator>
-        <Tab.Screen name="Library" component={LibraryScreen} />
-        <Tab.Screen name="Wishlist" component={WishlistScreen} />
-      </Tab.Navigator>
-    </NavigationContainer>
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
