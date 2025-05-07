@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, Button, Alert } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+
+import { db, auth } from '../firebaseConfig';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
 
 export default function AddGameScreen({ navigation }) {
     // Required fields
     const [title, setTitle] = useState('');
-    const [platform, setPlatform] = useState(''); // Create picker for this
+    const [platform, setPlatform] = useState('');
     const [genre, setGenre] = useState(''); // Could be multi-select or tags input
     const [status, setStatus] = useState(''); // E.g., 'Playing', 'Completed', 'On Hold', 'Backlog' - Picker for this needed
 
@@ -13,35 +17,61 @@ export default function AddGameScreen({ navigation }) {
     const [dateBeaten, setDateBeaten] = useState(''); // Could be a DatePicker
     const [notes, setNotes] = useState('');
 
-    async function handleAddGame() {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const platforms = [
+        { label: 'Select a Platform...', value: '' }, // Placeholder item
+        { label: 'PC (Steam, Epic, etc.)', value: 'PC' },
+        { label: 'PlayStation 5 (PS5)', value: 'PS5' },
+        { label: 'Xbox Series X/S', value: 'Xbox Series X/S' },
+        { label: 'Nintendo Switch', value: 'Nintendo Switch' },
+        { label: 'iOS', value: 'iOS' },
+        { label: 'Android', value: 'Android' },
+        { label: 'Other', value: 'Other' },
+    ];
+
+    const handleAddGame = async () => {
         if (!title.trim() || !platform.trim() || !genre.trim() || !status.trim()) {
             Alert.alert('Missing Information', 'Please fill in all required fields (Title, Platform, Genre, Status).');
             return;
         }
 
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            Alert.alert('Not Authenticated', 'You must be logged in to add a game.');
+            navigation.navigate('Login');
+            return;
+        }
+
+        setIsSubmitting(true);
+
         const gameData = {
+            userId: currentUser.uid,
             title,
             platform,
             genre,
             status,
-            rating: rating || null,
-            dateBeaten: dateBeaten || null,
-            notes: notes || '',
-            addedDate: new Date().toISOString(),
+            rating: rating.trim() === '' ? null : rating,
+            dateBeaten: dateBeaten.trim() === '' ? null : dateBeaten,
+            notes: notes.trim(),
+            createdAt: Timestamp.fromDate(new Date()),
         };
 
-        Alert.alert('Game Added (Simulated)', `${title} has been added to your library.`);
+        try {
+            const userGamesCollectionRef = collection(db, 'users', currentUser.uid, 'library');
 
-        navigation.goBack();
+            const docRef = await addDoc(userGamesCollectionRef, gameData);
+            console.log('Document written with ID: ', docRef.id);
 
-        setTitle('');
-        setPlatform('');
-        setGenre('');
-        setStatus('');
-        setRating('');
-        setDateBeaten('');
-        setNotes('');
-    }
+            Alert.alert('Game Added!', `${title} has been successfully added to your library.`);
+            navigation.goBack();
+        } catch (error) {
+            console.error('Error adding document: ', error);
+            Alert.alert('Error', `There was an issue adding your game: ${error.message}`);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
@@ -53,13 +83,18 @@ export default function AddGameScreen({ navigation }) {
                 onChangeText={setTitle}
             />
 
-            <Text style={styles.label}>Platform *</Text>
-            <TextInput // Replace with Picker or custom platform selector later
-                style={styles.input}
-                placeholder="e.g., PS5, PC, Nintendo Switch"
-                value={platform}
-                onChangeText={setPlatform}
-            />
+            <View style={styles.pickerContainer}>
+                <Picker
+                    selectedValue={platform}
+                    onValueChange={(itemValue, itemIndex) => setPlatform(itemValue)}
+                    style={styles.picker}
+                    itemStyle={styles.pickerItem} // For iOS item styling
+                >
+                    {platforms.map((p) => (
+                        <Picker.Item key={p.value} label={p.label} value={p.value} />
+                    ))}
+                </Picker>
+            </View>
 
             <Text style={styles.label}>Genre(s)/Tag(s) *</Text>
             <TextInput // Replace with a tag input or multi-select picker later
@@ -104,7 +139,11 @@ export default function AddGameScreen({ navigation }) {
                 numberOfLines={4}
             />
 
-            <Button title="Add Game to Library" onPress={handleAddGame} />
+            <Button
+                title="Add Game to Library"
+                onPress={handleAddGame}
+                disabled={isSubmitting}
+            />
         </ScrollView>
     );
 }
@@ -131,5 +170,16 @@ const styles = StyleSheet.create({
     textArea: {
         height: 100,
         textAlignVertical: 'top', // For Android
+    },
+    pickerContainer: {
+        borderColor: '#ddd',
+        borderWidth: 1,
+        borderRadius: 6,
+        marginBottom: 10,
+        backgroundColor: '#fff',
+    },
+    picker: {
+        width: '100%',
+        color: '#000',
     },
 });
