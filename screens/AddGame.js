@@ -1,34 +1,65 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, Button, Alert } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-
+import { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TextInput, Button, Alert, Pressable } from 'react-native';
 import { db, auth } from '../firebaseConfig';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
+import StarRatingModalPicker from '../components/StarRatingModalPicker';
+import DateModalPicker from '../components/DateModalPicker';
+import PlatformPicker from '../components/PlatformPicker';
+import GenrePicker from '../components/GenrePicker'
 
 export default function AddGameScreen({ navigation }) {
-    // Required fields
     const [title, setTitle] = useState('');
     const [platform, setPlatform] = useState('');
-    const [genre, setGenre] = useState(''); // Could be multi-select or tags input
-    const [status, setStatus] = useState(''); // E.g., 'Playing', 'Completed', 'On Hold', 'Backlog' - Picker for this needed
+    const [genre, setGenre] = useState('');
+    const [status, setStatus] = useState('');
 
-    // Optional fields
-    const [rating, setRating] = useState(''); // 1-5 star component
-    const [dateBeaten, setDateBeaten] = useState(''); // Could be a DatePicker
+    const [rating, setRating] = useState(null);
+    const [ratingModalVisible, setRatingModalVisible] = useState(false);
+
+    const [dateBeaten, setDateBeaten] = useState(null);
+    const [datePickerVisible, setDatePickerVisibility] = useState(false);
+
     const [notes, setNotes] = useState('');
-
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const platforms = [
-        { label: 'Select a Platform...', value: '' }, // Placeholder item
-        { label: 'PC (Steam, Epic, etc.)', value: 'PC' },
-        { label: 'PlayStation 5 (PS5)', value: 'PS5' },
-        { label: 'Xbox Series X/S', value: 'Xbox Series X/S' },
-        { label: 'Nintendo Switch', value: 'Nintendo Switch' },
-        { label: 'iOS', value: 'iOS' },
-        { label: 'Android', value: 'Android' },
-        { label: 'Other', value: 'Other' },
-    ];
+    const showDatePickerModal = () => setDatePickerVisibility(true);
+    const handleDateConfirmedFromPicker = (confirmedDate) => { setDateBeaten(confirmedDate); };
+    const openRatingModal = () => setRatingModalVisible(true);
+    const handleRatingConfirmed = (newRating) => { setRating(newRating); };
+
+    const formatDateForDisplay = (date) => {
+        if (!date) {
+            return "DD-MM-YYYY";
+        }
+
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // JavaScript months are 0-indexed
+        const year = date.getFullYear();
+
+        return `${day}-${month}-${year}`;
+    };
+
+    const renderStarsForDisplay = (currentRating) => {
+        if (currentRating === null) {
+            return <Text style={styles.placeholderTextRating}>Tap to rate</Text>;
+        }
+
+        let stars = [];
+        for (let i = 1; i <= 5; i++) {
+            stars.push(
+                <Ionicons
+                    key={i}
+                    name={i <= currentRating ? "star" : "star-outline"}
+                    size={28}
+                    color="#FFC107"
+                    style={styles.starDisplay}
+                />
+            );
+        }
+        return <View style={styles.starsRow}>{stars}</View>;
+    };
 
     const handleAddGame = async () => {
         if (!title.trim() || !platform.trim() || !genre.trim() || !status.trim()) {
@@ -44,25 +75,21 @@ export default function AddGameScreen({ navigation }) {
         }
 
         setIsSubmitting(true);
-
         const gameData = {
             userId: currentUser.uid,
             title,
             platform,
             genre,
             status,
-            rating: rating.trim() === '' ? null : rating,
-            dateBeaten: dateBeaten.trim() === '' ? null : dateBeaten,
+            rating: rating,
+            dateBeaten: dateBeaten ? Timestamp.fromDate(dateBeaten) : null,
             notes: notes.trim(),
             createdAt: Timestamp.fromDate(new Date()),
         };
 
         try {
             const userGamesCollectionRef = collection(db, 'users', currentUser.uid, 'library');
-
-            const docRef = await addDoc(userGamesCollectionRef, gameData);
-            console.log('Document written with ID: ', docRef.id);
-
+            await addDoc(userGamesCollectionRef, gameData);
             Alert.alert('Game Added!', `${title} has been successfully added to your library.`);
             navigation.goBack();
         } catch (error) {
@@ -76,110 +103,71 @@ export default function AddGameScreen({ navigation }) {
     return (
         <ScrollView contentContainerStyle={styles.container}>
             <Text style={styles.label}>Title *</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="e.g., Elden Ring"
-                value={title}
-                onChangeText={setTitle}
+            <TextInput style={styles.input} placeholder="e.g., Elden Ring" value={title} onChangeText={setTitle} />
+
+            <Text style={styles.label}>Platform *</Text>
+            <PlatformPicker
+                selectedValue={platform}
+                onValueChange={(itemValue) => setPlatform(itemValue)}
             />
 
-            <View style={styles.pickerContainer}>
-                <Picker
-                    selectedValue={platform}
-                    onValueChange={(itemValue, itemIndex) => setPlatform(itemValue)}
-                    style={styles.picker}
-                    itemStyle={styles.pickerItem} // For iOS item styling
-                >
-                    {platforms.map((p) => (
-                        <Picker.Item key={p.value} label={p.label} value={p.value} />
-                    ))}
-                </Picker>
-            </View>
-
-            <Text style={styles.label}>Genre(s)/Tag(s) *</Text>
-            <TextInput // Replace with a tag input or multi-select picker later
-                style={styles.input}
-                placeholder="e.g., Action RPG, Open World"
-                value={genre}
-                onChangeText={setGenre}
+            <Text style={styles.label}>Genre *</Text>
+            <GenrePicker
+                selectedValue={genre}
+                onValueChange={(itemValue) => setGenre(itemValue)}
             />
 
             <Text style={styles.label}>Status *</Text>
-            <TextInput // Replace with Picker: Playing, Completed, On Hold, Backlog, Dropped
-                style={styles.input}
-                placeholder="e.g., Playing, Completed"
-                value={status}
-                onChangeText={setStatus}
-            />
+            <TextInput style={styles.input} placeholder="e.g., Playing, Completed" value={status} onChangeText={setStatus} />
 
             <Text style={styles.label}>Rating (Optional)</Text>
-            <TextInput // Replace with a star rating component or number input
-                style={styles.input}
-                placeholder="e.g., 5/5, 9/10"
-                value={rating}
-                onChangeText={setRating}
-                keyboardType="numeric" // Example if it's a simple number
-            />
+            <Pressable onPress={openRatingModal}>
+                <View style={styles.ratingInput}>
+                    {renderStarsForDisplay(rating)}
+                </View>
+            </Pressable>
 
             <Text style={styles.label}>Date Beaten (Optional)</Text>
-            <TextInput // Replace with a DatePicker component
-                style={styles.input}
-                placeholder="YYYY-MM-DD"
-                value={dateBeaten}
-                onChangeText={setDateBeaten}
-            />
+            <Pressable onPress={showDatePickerModal}>
+                <View style={styles.datePickerInput}>
+                    <Text style={styles.datePickerText}>{formatDateForDisplay(dateBeaten)}</Text>
+                </View>
+            </Pressable>
 
             <Text style={styles.label}>Personal Notes (Optional)</Text>
-            <TextInput
-                style={[styles.input, styles.textArea]}
-                placeholder="Any thoughts, tips, or memories..."
-                value={notes}
-                onChangeText={setNotes}
-                multiline
-                numberOfLines={4}
-            />
+            <TextInput style={[styles.input, styles.textArea]} placeholder="Any thoughts, tips, or memories..." value={notes} onChangeText={setNotes} multiline numberOfLines={4} />
 
-            <Button
-                title="Add Game to Library"
-                onPress={handleAddGame}
-                disabled={isSubmitting}
+            <View style={styles.buttonContainer}>
+                <Button title="Add Game to Library" onPress={handleAddGame} disabled={isSubmitting} color="#007bff" />
+            </View>
+
+            <StarRatingModalPicker
+                modalVisible={ratingModalVisible}
+                setModalVisible={setRatingModalVisible}
+                currentRating={rating}
+                onRatingConfirm={handleRatingConfirmed}
+            />
+            <DateModalPicker
+                isVisible={datePickerVisible}
+                currentDate={dateBeaten}
+                onDateSelected={handleDateConfirmedFromPicker}
+                onCloseModal={() => setDatePickerVisibility(false)}
+                maximumDate={new Date()}
             />
         </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        padding: 20,
-    },
-    label: {
-        fontSize: 16,
-        marginBottom: 5,
-        marginTop: 10,
-        fontWeight: 'bold',
-    },
-    input: {
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: '#ddd',
-        padding: 10,
-        fontSize: 16,
-        borderRadius: 6,
-        marginBottom: 10,
-    },
-    textArea: {
-        height: 100,
-        textAlignVertical: 'top', // For Android
-    },
-    pickerContainer: {
-        borderColor: '#ddd',
-        borderWidth: 1,
-        borderRadius: 6,
-        marginBottom: 10,
-        backgroundColor: '#fff',
-    },
-    picker: {
-        width: '100%',
-        color: '#000',
-    },
+    container: { padding: 20, paddingBottom: 40 },
+    label: { fontSize: 16, marginBottom: 5, marginTop: 15, fontWeight: 'bold', color: '#333' },
+    input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#ddd', paddingHorizontal: 12, paddingVertical: 10, fontSize: 16, borderRadius: 6, marginBottom: 10, color: '#333' },
+    textArea: { height: 100, textAlignVertical: 'top' },
+    datePickerInput: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#ddd', paddingHorizontal: 12, paddingVertical: 12, fontSize: 16, borderRadius: 6, marginBottom: 10, justifyContent: 'center', minHeight: 48 },
+    datePickerText: { fontSize: 16, color: '#333' },
+    buttonContainer: { marginTop: 20 },
+    ratingInput: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#ddd', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 6, marginBottom: 10, justifyContent: 'center', alignItems: 'flex-start', minHeight: 48 },
+    placeholderTextRating: { fontSize: 16, color: '#aaa' },
+    starsRow: { flexDirection: 'row' },
+    starDisplay: { marginRight: 2 },
 });
