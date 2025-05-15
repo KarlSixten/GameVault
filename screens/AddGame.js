@@ -4,10 +4,10 @@ import { db, auth } from '../firebaseConfig';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import StarRatingModalPicker from '../components/StarRatingModalPicker';
-import DateModalPicker from '../components/DateModalPicker';
-import PlatformPicker from '../components/PlatformPicker';
-import GenrePicker from '../components/GenrePicker'
+import StarRatingModalPicker from '../components/pickers/StarRatingModalPicker';
+import DateModalPicker from '../components/pickers/DateModalPicker';
+import PlatformPicker from '../components/pickers/PlatformPicker';
+import GenrePicker from '../components/pickers/GenrePicker'
 
 export default function AddGameScreen({ navigation }) {
     const [title, setTitle] = useState('');
