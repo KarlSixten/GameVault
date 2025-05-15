@@ -1,9 +1,15 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable, StyleSheet, FlatList } from 'react-native';
 import { useLayoutEffect } from 'react';
-
+import { useCollection } from 'react-firebase-hooks/firestore';
+import { collection } from 'firebase/firestore';
+import { db, auth } from '../firebaseConfig';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+import GameCard from '../components/GameCard';
+
 export default function LibraryScreen({ navigation }) {
+    const firestoreName = `users/${auth.currentUser.uid}/library`;
+    const [library, loading, error] = useCollection(collection(db, firestoreName));
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -21,10 +27,18 @@ export default function LibraryScreen({ navigation }) {
 
     return (
         <View>
-            <Text>This is the library screen</Text>
+            <FlatList
+                data={library?.docs}
+                keyExtractor={(game) => game.id}
+                renderItem={({ item }) => (
+                    <GameCard game={item.data()} />
+                )}
+            />
+
         </View>
     );
 }
+
 
 const styles = StyleSheet.create({
     container: {
