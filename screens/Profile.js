@@ -9,7 +9,7 @@ export default function ProfileScreen() {
         try {
             await logout();
         } catch (error) {
-            console.error("Failed to logout", error);
+            Alert.alert("Log Out Failed", error.message);
         }
     };
 

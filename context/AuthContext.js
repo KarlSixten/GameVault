@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext } from 'react';
 import { auth } from '../firebaseConfig';
 import {
     onAuthStateChanged,
@@ -25,8 +25,8 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
-        } catch (error) {
-            console.error("Login Error:", error);
+        } catch (error) {            
+            throw error;
         }
     };
 
@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
         try {
             await createUserWithEmailAndPassword(auth, email, password);
         } catch (error) {
-            console.error("Signup Error:", error);
+            throw error;
         }
     };
 
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
         try {
             await signOut(auth);
         } catch (error) {
-            console.error("Logout Error:", error);
+            throw error;
         }
     };
 
