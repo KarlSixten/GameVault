@@ -6,8 +6,41 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import StarRatingModalPicker from '../components/pickers/StarRatingModalPicker';
 import DateModalPicker from '../components/pickers/DateModalPicker';
-import PlatformPicker from '../components/pickers/PlatformPicker';
-import GenrePicker from '../components/pickers/GenrePicker'
+import PickerWheel from '../components/pickers/PickerWheel'
+
+const platformOptions = [
+    { label: 'Select a Platform...', value: '' },
+    { label: 'PC (Steam, Epic, etc.)', value: 'PC' },
+    { label: 'PlayStation 5 (PS5)', value: 'PS5' },
+    { label: 'Xbox Series X/S', value: 'Xbox Series X/S' },
+    { label: 'Nintendo Switch', value: 'Nintendo Switch' },
+    { label: 'iOS', value: 'iOS' },
+    { label: 'Android', value: 'Android' },
+    { label: 'Other', value: 'Other' },
+];
+
+const genreOptions = [
+        { label: 'Select a genre...', value: null },
+        { label: 'Action', value: 'Action' },
+        { label: 'Adventure', value: 'Adventure' },
+        { label: 'Role-Playing (RPG)', value: 'RPG' },
+        { label: 'Strategy', value: 'Strategy' },
+        { label: 'Simulation', value: 'Simulation' },
+        { label: 'Sports', value: 'Sports' },
+        { label: 'Shooter', value: 'Shooter' },
+        { label: 'Puzzle', value: 'Puzzle' },
+        { label: 'Other', value: 'Other' },
+];
+
+const statusOptions = [
+    { label: 'Select a status...', value: null },
+    { label: 'Playing', value: 'Playing' },
+    { label: 'On Hold', value: 'On Hold' },
+    { label: 'Completed', value: 'Completed' },
+    { label: '100% Completed', value: '100%' },
+    { label: 'Dropped', value: 'Dropped' },
+    { label: 'Not Started', value: 'Not Started' },
+];
 
 export default function AddGameScreen({ navigation }) {
     const [title, setTitle] = useState('');
@@ -106,19 +139,25 @@ export default function AddGameScreen({ navigation }) {
             <TextInput style={styles.input} placeholder="e.g., Elden Ring" value={title} onChangeText={setTitle} />
 
             <Text style={styles.label}>Platform *</Text>
-            <PlatformPicker
+            <PickerWheel
+                values={platformOptions}
                 selectedValue={platform}
                 onValueChange={(itemValue) => setPlatform(itemValue)}
             />
 
             <Text style={styles.label}>Genre *</Text>
-            <GenrePicker
+            <PickerWheel
+                values={genreOptions}
                 selectedValue={genre}
                 onValueChange={(itemValue) => setGenre(itemValue)}
             />
 
             <Text style={styles.label}>Status *</Text>
-            <TextInput style={styles.input} placeholder="e.g., Playing, Completed" value={status} onChangeText={setStatus} />
+            <PickerWheel
+                values={statusOptions}
+                selectedValue={status}
+                onValueChange={(itemValue) => setStatus(itemValue)}
+            />
 
             <Text style={styles.label}>Rating (Optional)</Text>
             <Pressable onPress={openRatingModal}>
