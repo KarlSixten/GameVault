@@ -1,4 +1,4 @@
-import { View, Pressable, StyleSheet, FlatList } from 'react-native';
+import { View, Pressable, StyleSheet, FlatList, ScrollView } from 'react-native';
 import { useLayoutEffect } from 'react';
 import { useCollection } from 'react-firebase-hooks/firestore';
 import { collection } from 'firebase/firestore';
@@ -31,7 +31,9 @@ export default function LibraryScreen({ navigation }) {
                 data={library?.docs}
                 keyExtractor={(game) => game.id}
                 renderItem={({ item }) => (
-                    <GameCard game={item.data()} />
+                    <Pressable onPress={() => navigation.navigate("GameDetails", { game: { id: item.id, ...item.data() } })}>
+                        <GameCard game={item.data()} />
+                    </Pressable>
                 )}
             />
 
