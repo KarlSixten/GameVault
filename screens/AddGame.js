@@ -20,16 +20,16 @@ const platformOptions = [
 ];
 
 const genreOptions = [
-        { label: 'Select a genre...', value: null },
-        { label: 'Action', value: 'Action' },
-        { label: 'Adventure', value: 'Adventure' },
-        { label: 'Role-Playing (RPG)', value: 'RPG' },
-        { label: 'Strategy', value: 'Strategy' },
-        { label: 'Simulation', value: 'Simulation' },
-        { label: 'Sports', value: 'Sports' },
-        { label: 'Shooter', value: 'Shooter' },
-        { label: 'Puzzle', value: 'Puzzle' },
-        { label: 'Other', value: 'Other' },
+    { label: 'Select a genre...', value: null },
+    { label: 'Action', value: 'Action' },
+    { label: 'Adventure', value: 'Adventure' },
+    { label: 'Role-Playing (RPG)', value: 'RPG' },
+    { label: 'Strategy', value: 'Strategy' },
+    { label: 'Simulation', value: 'Simulation' },
+    { label: 'Sports', value: 'Sports' },
+    { label: 'Shooter', value: 'Shooter' },
+    { label: 'Puzzle', value: 'Puzzle' },
+    { label: 'Other', value: 'Other' },
 ];
 
 const statusOptions = [
@@ -41,6 +41,9 @@ const statusOptions = [
     { label: 'Dropped', value: 'Dropped' },
     { label: 'Not Started', value: 'Not Started' },
 ];
+
+const nonCompletedStatuses = ['Playing', 'On Hold', 'Not Started', 'Dropped'];
+
 
 export default function AddGameScreen({ navigation }) {
     const [title, setTitle] = useState('');
@@ -159,17 +162,22 @@ export default function AddGameScreen({ navigation }) {
                 onValueChange={(itemValue) => setStatus(itemValue)}
             />
 
+            {status !== null && !nonCompletedStatuses.includes(status) && (
+                <View>
+                <Text style={styles.label}>Date Beaten (Optional)</Text>
+                <Pressable onPress={showDatePickerModal}>
+                    <View style={styles.datePickerInput}>
+                        <Text style={styles.datePickerText}>{formatDateForDisplay(dateBeaten)}</Text>
+                    </View>
+                </Pressable>
+                </View>
+            )}
+
+
             <Text style={styles.label}>Rating (Optional)</Text>
             <Pressable onPress={openRatingModal}>
                 <View style={styles.ratingInput}>
                     {renderStarsForDisplay(rating)}
-                </View>
-            </Pressable>
-
-            <Text style={styles.label}>Date Beaten (Optional)</Text>
-            <Pressable onPress={showDatePickerModal}>
-                <View style={styles.datePickerInput}>
-                    <Text style={styles.datePickerText}>{formatDateForDisplay(dateBeaten)}</Text>
                 </View>
             </Pressable>
 
@@ -186,6 +194,7 @@ export default function AddGameScreen({ navigation }) {
                 currentRating={rating}
                 onRatingConfirm={handleRatingConfirmed}
             />
+
             <DateModalPicker
                 isVisible={datePickerVisible}
                 currentDate={dateBeaten}

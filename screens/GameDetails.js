@@ -77,14 +77,6 @@ export default function GameDetails({ route, navigation }) {
         }
     }
 
-    if (Object.keys(gameDetails).length === 0) {
-        return (
-            <View style={styles.container}>
-                <Text style={styles.errorText}>Game details not found.</Text>
-            </View>
-        );
-    }
-
     const handleDeleteGame = async () => {
         if (!gameDetails.id || !auth.currentUser) {
             Alert.alert("Error", "Cannot delete game. Missing game ID or user not logged in.");
@@ -120,6 +112,14 @@ export default function GameDetails({ route, navigation }) {
             ]
         );
     };
+
+    if (Object.keys(gameDetails).length === 0) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.errorText}>Game details not found.</Text>
+            </View>
+        );
+    }
 
     return (
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.container}>
