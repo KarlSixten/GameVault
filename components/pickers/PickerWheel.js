@@ -1,29 +1,19 @@
 import { View, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
-const platforms = [
-    { label: 'Select a Platform...', value: '' },
-    { label: 'PC (Steam, Epic, etc.)', value: 'PC' },
-    { label: 'PlayStation 5 (PS5)', value: 'PS5' },
-    { label: 'Xbox Series X/S', value: 'Xbox Series X/S' },
-    { label: 'Nintendo Switch', value: 'Nintendo Switch' },
-    { label: 'iOS', value: 'iOS' },
-    { label: 'Android', value: 'Android' },
-    { label: 'Other', value: 'Other' },
-];
-
-const PlatformPicker = ({ selectedValue, onValueChange, enabled = true }) => {
+const PickerWheel = ({ values, selectedValue, onValueChange, enabled = true }) => {
     return (
         <View style={styles.pickerContainer}>
             <Picker
+                values={values}
                 selectedValue={selectedValue}
                 onValueChange={onValueChange}
                 enabled={enabled}
                 style={styles.picker}
                 itemStyle={styles.pickerItem}
             >
-                {platforms.map((platform) => (
-                    <Picker.Item key={platform.value} label={platform.label} value={platform.value} />
+                {values.map((item) => (
+                    <Picker.Item key={item.value} label={item.label} value={item.value} />
                 ))}
             </Picker>
         </View>
@@ -45,4 +35,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default PlatformPicker;
+export default PickerWheel;

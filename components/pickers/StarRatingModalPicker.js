@@ -32,7 +32,7 @@ const StarRatingModalPicker = ({ modalVisible, setModalVisible, currentRating, o
                                 <Ionicons
                                     name={starValue <= (currentRating || 0) ? "star" : "star-outline"}
                                     size={40}
-                                    color="#FFC107" // Gold/yellow for stars
+                                    color="#FFC107" // Gold/yellow
                                 />
                             </Pressable>
                         ))}
