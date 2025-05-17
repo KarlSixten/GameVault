@@ -1,21 +1,14 @@
-import { View, StyleSheet, Text, ScrollView, ActivityIndicator, Alert, Button } from "react-native";
+import { View, StyleSheet, Text, ScrollView, ActivityIndicator, Alert, Button, Pressable } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import Slider from "@react-native-community/slider";
-import { doc, updateDoc, deleteDoc, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc, Timestamp } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
-import { useState } from "react";
+import { useState, useLayoutEffect, useCallback } from "react";
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { convertFirestoreTimestampToJSDate } from "../util/convert";
 
-const formatFirebaseDate = (dateObject) => {
-    if (!dateObject) {
-        return null;
-    }
-
-    const jsDate = new Date(dateObject.seconds * 1000 + dateObject.nanoseconds / 1000000);
-
-    if (isNaN(jsDate.getTime())) {
-        console.warn("GameDetails: Constructed an invalid date from:", dateObject);
-        return "Invalid Date";
-    }
+const formatFirebaseDate = (timestamp) => {
+    const jsDate = convertFirestoreTimestampToJSDate(timestamp);
 
     return jsDate.toLocaleDateString(undefined, {
         year: 'numeric',
@@ -24,17 +17,68 @@ const formatFirebaseDate = (dateObject) => {
     });
 };
 
-export default function GameDetails({ route, navigation }) {
+export default function GameDetailsScreen({ route, navigation }) {
+    const gameIdFromRoute = route.params?.game?.id;
+
     const [gameDetails, setGameDetails] = useState(route.params?.game || {});
 
     const [isUpdating, setIsUpdating] = useState(false);
     const [sliderValue, setSliderValue] = useState(0);
 
     const [formattedDateBeaten, setFormattedDateBeaten] = useState(formatFirebaseDate(gameDetails.dateBeaten));
-    const formattedDateAdded = formatFirebaseDate(gameDetails.createdAt);
+    const [formattedDateAdded, setFormattedDateAdded] = useState(formatFirebaseDate(gameDetails.createdAt));
 
     const nonCompletedStatuses = ['Playing', 'On Hold', 'Not Started', 'Dropped'];
-    const isGameCompletable = gameDetails && gameDetails.id && nonCompletedStatuses.includes(gameDetails.status) && !gameDetails.dateBeaten;
+    const gameIsCompletable = gameDetails && gameDetails.id && nonCompletedStatuses.includes(gameDetails.status) && !gameDetails.dateBeaten;
+
+    useFocusEffect(
+        useCallback(() => {
+            let isActive = true;
+
+            const fetchGameDetails = async () => {
+                try {
+                    const gameRef = doc(db, 'users', auth.currentUser.uid, 'library', gameIdFromRoute);
+
+                    const docSnap = await getDoc(gameRef);
+
+                    if (docSnap.exists()) {
+                        const fetchedData = { id: docSnap.id, ...docSnap.data() };
+                        setGameDetails(fetchedData);
+                        setFormattedDateBeaten(formatFirebaseDate(fetchedData.dateBeaten));
+                        setFormattedDateAdded(formatFirebaseDate(fetchedData.createdAt));
+                    } else {
+                        Alert.alert("Not Found", "This game was not found in your library.");
+                        setGameDetails(null);
+                    }
+                } catch (error) {
+                    Alert.alert("Fetch Error", "Could not load game details. An error occurred.");
+                    setGameDetails(null);
+                } 
+            };
+
+            if (isActive) {
+                fetchGameDetails();
+            }
+
+            return () => {
+                isActive = false;
+            };
+        }, [gameIdFromRoute])
+    );
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <Pressable
+                    onPress={() => navigation.navigate('EditGame', { game: gameDetails })}
+                    style={styles.headerButton}
+
+                >
+                    <Ionicons name="create-outline" size={30} color="#007AFF" />
+                </Pressable>
+            ),
+        });
+    }, [navigation, gameDetails]);
 
     const handleCompleteGame = async () => {
         if (!gameDetails.id || !auth.currentUser) {
@@ -133,7 +177,7 @@ export default function GameDetails({ route, navigation }) {
 
             {gameDetails.rating !== null && (
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Rating</Text>
+                    <Text style={styles.sectionTitle}>My Rating</Text>
                     <View style={styles.ratingContainer}>
                         {[...Array(5)].map((_, index) => (
                             <Ionicons
@@ -168,7 +212,7 @@ export default function GameDetails({ route, navigation }) {
                 </View>
             )}
 
-            {isGameCompletable && !isUpdating && (
+            {gameIsCompletable && !isUpdating && (
                 <View style={[styles.section, styles.sliderSection]}>
                     <Text style={styles.sliderLabel}>Mark as Completed Today?</Text>
                     <View style={styles.sliderContainer}>
@@ -320,6 +364,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         padding: 20,
-    }
+    },
+    headerButton: {
+        width: 44,
+        height: 44,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 
 });
