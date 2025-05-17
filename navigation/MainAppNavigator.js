@@ -9,9 +9,11 @@ import GameDetailsScreen from '../screens/GameDetails';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import EditGameScreen from '../screens/EditGame';
+import SearchGameScreen from '../screens/SearchGame';
 
 const Tab = createBottomTabNavigator();
 const LibraryStack = createNativeStackNavigator();
+const WishlistStack = createNativeStackNavigator();
 
 export default function MainAppNavigator() {
     return (
@@ -49,8 +51,10 @@ export default function MainAppNavigator() {
             />
             <Tab.Screen
                 name="WishlistTab"
-                component={WishlistScreen}
-                options={{ title: 'Wishlist' }}
+                component={WishlistStackNavigator}
+                options={{ 
+                  headerShown: false,
+                  title: 'Wishlist' }}
             />
             <Tab.Screen
                 name="ProfileTab"
@@ -59,6 +63,24 @@ export default function MainAppNavigator() {
             />
         </Tab.Navigator>
     );
+}
+
+function WishlistStackNavigator() {
+  return (
+    <WishlistStack.Navigator>
+      <WishlistStack.Screen
+        name="Wishlist"
+        component={WishlistScreen}
+        options={{ title: 'Wishlist' }}
+      />
+      <WishlistStack.Screen
+        name="SearchGame"
+        component={SearchGameScreen}
+        options={{
+          title: 'Search Games'}}
+      />
+    </WishlistStack.Navigator>
+  );
 }
 
 function LibraryStackNavigator() {

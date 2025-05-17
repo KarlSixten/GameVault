@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const GameCard = ({ game }) => {
@@ -17,13 +17,15 @@ const GameCard = ({ game }) => {
 
             <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Genre:</Text>
-                <Text style={styles.detailValue}>{game.genre || 'N/A'}</Text>
+                <Text style={styles.detailValue}>{game.genre}</Text>
             </View>
 
-            <View style={styles.detailRow}>
+            {game.status && (
+                <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Status:</Text>
-                <Text style={styles.detailValue}>{game.status || 'N/A'}</Text>
-            </View>
+                <Text style={styles.detailValue}>{game.status}</Text>
+            </View>)
+            }
 
             {game.rating !== null && typeof game.rating === 'number' && (
                 <View style={styles.ratingContainer}>
@@ -59,6 +61,10 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 0.15,
         shadowRadius: 3.84,
+    },
+    image: {
+        width: 80,
+        height: 100,
     },
     title: {
         fontSize: 20,

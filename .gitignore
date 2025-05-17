@@ -401,4 +401,5 @@ FodyWeavers.xsd
 *.sln.iml
 
 firebaseConfig.js
+rawgioAuth.js
 .expo/
