@@ -31,7 +31,7 @@ export default function LibraryScreen({ navigation }) {
                 data={library?.docs}
                 keyExtractor={(game) => game.id}
                 renderItem={({ item }) => (
-                    <Pressable onPress={() => navigation.navigate("GameDetails", { game: { id: item.id, ...item.data() } })}>
+                    <Pressable onPress={() => navigation.navigate("GameDetails", { game: { id: item.id, ...item.data() }})}>
                         <GameCard game={item.data()} />
                     </Pressable>
                 )}

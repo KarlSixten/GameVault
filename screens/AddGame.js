@@ -3,53 +3,21 @@ import { View, Text, StyleSheet, ScrollView, TextInput, Button, Alert, Pressable
 import { db, auth } from '../firebaseConfig';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { formatDateForDisplay } from '../util/convert';
 
 import StarRatingModalPicker from '../components/pickers/StarRatingModalPicker';
 import DateModalPicker from '../components/pickers/DateModalPicker';
 import PickerWheel from '../components/pickers/PickerWheel'
 
-const platformOptions = [
-    { label: 'Select a Platform...', value: '' },
-    { label: 'PC (Steam, Epic, etc.)', value: 'PC' },
-    { label: 'PlayStation 5 (PS5)', value: 'PS5' },
-    { label: 'Xbox Series X/S', value: 'Xbox Series X/S' },
-    { label: 'Nintendo Switch', value: 'Nintendo Switch' },
-    { label: 'iOS', value: 'iOS' },
-    { label: 'Android', value: 'Android' },
-    { label: 'Other', value: 'Other' },
-];
-
-const genreOptions = [
-    { label: 'Select a genre...', value: null },
-    { label: 'Action', value: 'Action' },
-    { label: 'Adventure', value: 'Adventure' },
-    { label: 'Role-Playing (RPG)', value: 'RPG' },
-    { label: 'Strategy', value: 'Strategy' },
-    { label: 'Simulation', value: 'Simulation' },
-    { label: 'Sports', value: 'Sports' },
-    { label: 'Shooter', value: 'Shooter' },
-    { label: 'Puzzle', value: 'Puzzle' },
-    { label: 'Other', value: 'Other' },
-];
-
-const statusOptions = [
-    { label: 'Select a status...', value: null },
-    { label: 'Playing', value: 'Playing' },
-    { label: 'On Hold', value: 'On Hold' },
-    { label: 'Completed', value: 'Completed' },
-    { label: '100% Completed', value: '100%' },
-    { label: 'Dropped', value: 'Dropped' },
-    { label: 'Not Started', value: 'Not Started' },
-];
+import { platformOptions, genreOptions, statusOptions } from '../util/options';
 
 const nonCompletedStatuses = ['Playing', 'On Hold', 'Not Started', 'Dropped'];
 
-
 export default function AddGameScreen({ navigation }) {
     const [title, setTitle] = useState('');
-    const [platform, setPlatform] = useState('');
-    const [genre, setGenre] = useState('');
-    const [status, setStatus] = useState('');
+    const [platform, setPlatform] = useState(null);
+    const [genre, setGenre] = useState(null);
+    const [status, setStatus] = useState(null);
 
     const [rating, setRating] = useState(null);
     const [ratingModalVisible, setRatingModalVisible] = useState(false);
@@ -58,24 +26,13 @@ export default function AddGameScreen({ navigation }) {
     const [datePickerVisible, setDatePickerVisibility] = useState(false);
 
     const [notes, setNotes] = useState('');
+
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const showDatePickerModal = () => setDatePickerVisibility(true);
     const handleDateConfirmedFromPicker = (confirmedDate) => { setDateBeaten(confirmedDate); };
     const openRatingModal = () => setRatingModalVisible(true);
     const handleRatingConfirmed = (newRating) => { setRating(newRating); };
-
-    const formatDateForDisplay = (date) => {
-        if (!date) {
-            return "DD-MM-YYYY";
-        }
-
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // JavaScript months are 0-indexed
-        const year = date.getFullYear();
-
-        return `${day}-${month}-${year}`;
-    };
 
     const renderStarsForDisplay = (currentRating) => {
         if (currentRating === null) {

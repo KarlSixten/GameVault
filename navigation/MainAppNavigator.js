@@ -5,8 +5,10 @@ import LibraryScreen from '../screens/Library';
 import WishlistScreen from '../screens/Wishlist';
 import ProfileScreen from '../screens/Profile';
 import AddGameScreen from '../screens/AddGame';
+import GameDetailsScreen from '../screens/GameDetails';
+
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import GameDetails from '../screens/GameDetails';
+import EditGameScreen from '../screens/EditGame';
 
 const Tab = createBottomTabNavigator();
 const LibraryStack = createNativeStackNavigator();
@@ -68,16 +70,22 @@ function LibraryStackNavigator() {
         options={{ title: 'Library' }}
       />
       <LibraryStack.Screen
-        name="GameDetails"
-        component={GameDetails}
-        options={{ title: 'Details'}} />
-      <LibraryStack.Screen
         name="AddGame"
         component={AddGameScreen}
         options={{
-          title: 'Add New Game',
-        }}
+          title: 'Add New Game'}}
       />
+      <LibraryStack.Screen
+        name="GameDetails"
+        component={GameDetailsScreen}
+        options={{ title: 'Details'}} 
+      />
+      <LibraryStack.Screen
+        name="EditGame"
+        component={EditGameScreen} 
+        options={{ title: 'Edit Game'}}
+      />
+      
     </LibraryStack.Navigator>
   );
 }
