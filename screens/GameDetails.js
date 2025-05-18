@@ -1,4 +1,4 @@
-import { View, StyleSheet, Text, ScrollView, ActivityIndicator, Alert, Button, Pressable } from "react-native";
+import { View, StyleSheet, Text, ScrollView, ActivityIndicator, Alert, Button, Pressable, Image } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import Slider from "@react-native-community/slider";
 import { doc, getDoc, updateDoc, deleteDoc, Timestamp } from 'firebase/firestore';
@@ -8,6 +8,9 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { convertFirestoreTimestampToJSDate } from "../util/convert";
 
 const formatFirebaseDate = (timestamp) => {
+    if (!timestamp) {
+        return;
+    }
     const jsDate = convertFirestoreTimestampToJSDate(timestamp);
 
     return jsDate.toLocaleDateString(undefined, {
@@ -167,6 +170,22 @@ export default function GameDetailsScreen({ route, navigation }) {
 
     return (
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.container}>
+
+            {gameDetails.imageUrl ? (
+                <View style={styles.imageOuterContainer}>
+                    <Image
+                        source={{ uri: gameDetails.imageUrl }}
+                        style={styles.gameImage}
+                    />
+                </View>
+            ) : (
+                <View style={styles.imageOuterContainer}>
+                    <View style={styles.imagePlaceholder}>
+                        <Ionicons name="image-outline" size={80} color="#c0c0c0" />
+                        <Text style={styles.imagePlaceholderText}>No Image</Text>
+                    </View>
+                </View>
+            )}
             <Text style={styles.gameTitle}>{gameDetails.title}</Text>
 
             <View style={styles.section}>
@@ -370,6 +389,32 @@ const styles = StyleSheet.create({
         height: 44,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    imageOuterContainer: {
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    gameImage: {
+        width: 180,
+        height: 320,
+        borderRadius: 8,
+        backgroundColor: '#e0e0e0',
+        resizeMode: 'cover',
+    },
+    imagePlaceholder: {
+        width: 180,
+        height: 320,
+        borderRadius: 8,
+        backgroundColor: '#e9e9e9',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#ddd',
+    },
+    imagePlaceholderText: {
+        marginTop: 10,
+        color: '#aaa',
+        fontSize: 16,
     },
 
 });

@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, Button, Alert, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, Button, Alert, Pressable, ActivityIndicator, Image } from 'react-native';
 import { db, auth } from '../firebaseConfig';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { formatDateForDisplay } from '../util/convert';
+import { chooseImageSourceAlert, uploadImageFromUri } from '../components/pickers/ImagePicker'
 
 import StarRatingModalPicker from '../components/pickers/StarRatingModalPicker';
 import DateModalPicker from '../components/pickers/DateModalPicker';
@@ -24,6 +25,8 @@ export default function AddGameScreen({ navigation }) {
 
     const [dateBeaten, setDateBeaten] = useState(null);
     const [datePickerVisible, setDatePickerVisibility] = useState(false);
+
+    const [localImageUri, setLocalImageUri] = useState(null);
 
     const [notes, setNotes] = useState('');
 
@@ -54,6 +57,17 @@ export default function AddGameScreen({ navigation }) {
         return <View style={styles.starsRow}>{stars}</View>;
     };
 
+    const handleChooseImage = () => {
+        chooseImageSourceAlert((uri) => {
+            if (uri) {
+                setLocalImageUri(uri);
+            } else {
+                console.log("Image selection cancelled or no image picked.");
+                setLocalImageUri(null);
+            }
+        });
+    };
+
     const handleAddGame = async () => {
         if (!title.trim() || !platform.trim() || !genre.trim() || !status.trim()) {
             Alert.alert('Missing Information', 'Please fill in all required fields (Title, Platform, Genre, Status).');
@@ -68,19 +82,26 @@ export default function AddGameScreen({ navigation }) {
         }
 
         setIsSubmitting(true);
-        const gameData = {
-            userId: currentUser.uid,
-            title,
-            platform,
-            genre,
-            status,
-            rating: rating,
-            dateBeaten: dateBeaten ? Timestamp.fromDate(dateBeaten) : null,
-            notes: notes.trim(),
-            createdAt: Timestamp.fromDate(new Date()),
-        };
+        let finalImageUrl = null;
 
         try {
+
+            if (localImageUri) {
+                finalImageUrl = await uploadImageFromUri(localImageUri);
+            }
+            const gameData = {
+                userId: currentUser.uid,
+                title,
+                platform,
+                genre,
+                status,
+                rating: rating,
+                dateBeaten: dateBeaten ? Timestamp.fromDate(dateBeaten) : null,
+                imageUrl: finalImageUrl,
+                notes: notes.trim(),
+                createdAt: Timestamp.fromDate(new Date()),
+            };
+
             const userGamesCollectionRef = collection(db, 'users', currentUser.uid, 'library');
             await addDoc(userGamesCollectionRef, gameData);
             Alert.alert('Game Added!', `${title} has been successfully added to your library.`);
@@ -121,12 +142,12 @@ export default function AddGameScreen({ navigation }) {
 
             {status !== null && !nonCompletedStatuses.includes(status) && (
                 <View>
-                <Text style={styles.label}>Date Beaten (Optional)</Text>
-                <Pressable onPress={showDatePickerModal}>
-                    <View style={styles.datePickerInput}>
-                        <Text style={styles.datePickerText}>{formatDateForDisplay(dateBeaten)}</Text>
-                    </View>
-                </Pressable>
+                    <Text style={styles.label}>Date Beaten (Optional)</Text>
+                    <Pressable onPress={showDatePickerModal}>
+                        <View style={styles.datePickerInput}>
+                            <Text style={styles.datePickerText}>{formatDateForDisplay(dateBeaten)}</Text>
+                        </View>
+                    </Pressable>
                 </View>
             )}
 
@@ -136,6 +157,16 @@ export default function AddGameScreen({ navigation }) {
                 <View style={styles.ratingInput}>
                     {renderStarsForDisplay(rating)}
                 </View>
+            </Pressable>
+
+            <Text style={styles.label}>Cover Image (Optional)</Text>
+            {localImageUri && (
+                <Image source={{ uri: localImageUri }} style={styles.imagePreview} />
+            )}
+            <Pressable onPress={handleChooseImage} disabled={isSubmitting} style={styles.imageButton}>
+                <Text style={styles.imageButtonText}>
+                    {localImageUri ? "Change Selected Image" : "Select Custom Image"}
+                </Text>
             </Pressable>
 
             <Text style={styles.label}>Personal Notes (Optional)</Text>
@@ -175,4 +206,33 @@ const styles = StyleSheet.create({
     placeholderTextRating: { fontSize: 16, color: '#aaa' },
     starsRow: { flexDirection: 'row' },
     starDisplay: { marginRight: 2 },
+    imageButton: {
+        backgroundColor: '#007AFF',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 6,
+        alignItems: 'center',
+        marginBottom: 10,
+        marginTop: 5,
+    },
+    imageButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    imagePreview: {
+        width: '100%',
+        height: 200,
+        borderRadius: 6,
+        marginBottom: 10,
+        backgroundColor: '#e0e0e0', // Placeholder
+        resizeMode: 'contain',
+    },
+    loadingContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 10,
+    },
+    buttonContainer: { marginTop: 30 },
 });
