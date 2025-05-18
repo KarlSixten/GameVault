@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, Button, Alert, Pressable, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, Button, Alert, Pressable, Image } from 'react-native';
 import { db, auth } from '../firebaseConfig';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -82,13 +82,22 @@ export default function AddGameScreen({ navigation }) {
         }
 
         setIsSubmitting(true);
-        let finalImageUrl = null;
+
+        if (nonCompletedStatuses.includes(status)) {
+            setDateBeaten(null);
+        }
 
         try {
+            let finalImageUrl = null;
+            let finalImageStoragePath = null;
 
             if (localImageUri) {
-                finalImageUrl = await uploadImageFromUri(localImageUri);
-            }
+                const uploadResult = await uploadImageFromUri(localImageUri);
+                if (uploadResult) {
+                    finalImageUrl = uploadResult.downloadURL;
+                    finalImageStoragePath = uploadResult.storagePath;
+            }}
+
             const gameData = {
                 userId: currentUser.uid,
                 title,
@@ -98,6 +107,7 @@ export default function AddGameScreen({ navigation }) {
                 rating: rating,
                 dateBeaten: dateBeaten ? Timestamp.fromDate(dateBeaten) : null,
                 imageUrl: finalImageUrl,
+                imagePath: finalImageStoragePath,
                 notes: notes.trim(),
                 createdAt: Timestamp.fromDate(new Date()),
             };
@@ -221,12 +231,12 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     imagePreview: {
-        width: '100%',
-        height: 200,
+        width: '50%',
+        aspectRatio: 9 / 16,
+        alignSelf: 'center',
+        marginBottom: 15,
+        backgroundColor: '#e0e0e0',
         borderRadius: 6,
-        marginBottom: 10,
-        backgroundColor: '#e0e0e0', // Placeholder
-        resizeMode: 'contain',
     },
     loadingContainer: {
         flexDirection: 'row',

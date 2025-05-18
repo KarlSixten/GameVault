@@ -2,7 +2,8 @@ import { View, StyleSheet, Text, ScrollView, ActivityIndicator, Alert, Button, P
 import { useFocusEffect } from "@react-navigation/native";
 import Slider from "@react-native-community/slider";
 import { doc, getDoc, updateDoc, deleteDoc, Timestamp } from 'firebase/firestore';
-import { db, auth } from '../firebaseConfig';
+import { db, auth, storage } from '../firebaseConfig';
+import { ref, deleteObject } from "firebase/storage";
 import { useState, useLayoutEffect, useCallback } from "react";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { convertFirestoreTimestampToJSDate } from "../util/convert";
@@ -56,7 +57,7 @@ export default function GameDetailsScreen({ route, navigation }) {
                 } catch (error) {
                     Alert.alert("Fetch Error", "Could not load game details. An error occurred.");
                     setGameDetails(null);
-                } 
+                }
             };
 
             if (isActive) {
@@ -124,6 +125,9 @@ export default function GameDetailsScreen({ route, navigation }) {
         }
     }
 
+    // -------------------------------
+    // Lader ikke til at slette billeder
+    // -------------------------------
     const handleDeleteGame = async () => {
         if (!gameDetails.id || !auth.currentUser) {
             Alert.alert("Error", "Cannot delete game. Missing game ID or user not logged in.");
@@ -143,9 +147,23 @@ export default function GameDetailsScreen({ route, navigation }) {
                     onPress: async () => {
                         setIsUpdating(true);
                         try {
+                            const imagePathToDelete = gameDetails.imageStoragePath;
+                            
+                            if (imagePathToDelete) {
+                                const imageFileRef = ref(storage, imagePathToDelete);
+
+                                try {
+                                    await deleteObject(imageFileRef);
+                                } catch (storageError) {
+                                    console.error(`Failed to delete image from Storage (path: ${imagePathToDelete}):`, storageError);
+                                }
+                            }
+
                             const gameRef = doc(db, 'users', auth.currentUser.uid, 'library', gameDetails.id);
                             await deleteDoc(gameRef);
+
                             Alert.alert("Success", `"${gameDetails.title}" has been deleted.`);
+
                             navigation.goBack();
                         } catch (error) {
                             console.error("Error deleting game:", error);

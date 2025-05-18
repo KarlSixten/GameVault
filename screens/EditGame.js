@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, Button, Alert, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, Button, Alert, Pressable, Image } from 'react-native';
 import { db, auth } from '../firebaseConfig';
 import { updateDoc, doc } from 'firebase/firestore';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { formatDateForDisplay, convertFirestoreTimestampToJSDate } from '../util/convert';
+import { chooseImageSourceAlert, uploadImageFromUri } from '../components/pickers/ImagePicker'
 
 import StarRatingModalPicker from '../components/pickers/StarRatingModalPicker';
 import DateModalPicker from '../components/pickers/DateModalPicker';
@@ -20,14 +21,15 @@ export default function EditGameScreen({ route, navigation }) {
     const [newPlatform, setNewPlatform] = useState(gameDetails.platform);
     const [newGenre, setNewGenre] = useState(gameDetails.genre);
     const [newStatus, setNewStatus] = useState(gameDetails.status);
-    const [newDateBeaten, setNewDateBeaten] = useState(convertFirestoreTimestampToJSDate(gameDetails.dateBeaten)); 
+    const [newDateBeaten, setNewDateBeaten] = useState(convertFirestoreTimestampToJSDate(gameDetails.dateBeaten));
     const [newRating, setNewRating] = useState(gameDetails.rating);
     const [newNotes, setNewNotes] = useState(gameDetails.notes);
-
 
     const [ratingModalVisible, setRatingModalVisible] = useState(false);
     const [datePickerVisible, setDatePickerVisibility] = useState(false);
 
+    const [newLocalImageUri, setNewLocalImageUri] = useState(null);
+    const currentImageUrl = gameDetails.imageUrl;
 
     const showDatePickerModal = () => setDatePickerVisibility(true);
     const handleDateConfirmedFromPicker = (confirmedDate) => { setNewDateBeaten(confirmedDate); };
@@ -56,39 +58,67 @@ export default function EditGameScreen({ route, navigation }) {
         return <View style={styles.starsRow}>{stars}</View>;
     };
 
+    const handleChooseImage = () => {
+        chooseImageSourceAlert((uri) => {
+            if (uri) {
+                setNewLocalImageUri(uri);
+            } else {
+                console.log("Image selection cancelled or no image picked.");
+                setNewLocalImageUri(null);
+            }
+        });
+    };
+
     const handleSaveGame = async () => {
-        if (!newTitle || !newPlatform || !newGenre || !newStatus) {
-            Alert.alert("Missing Fields", "Please fill in all required fields (*).");
+        if (!newTitle.trim() || !newPlatform.trim() || !newGenre.trim() || !newStatus.trim()) {
+            Alert.alert('Missing Information', 'Please fill in all required fields (Title, Platform, Genre, Status).');
             return;
         }
-        if (!auth.currentUser || !gameDetails.id) {
-            Alert.alert("Error", "Cannot save game. User not logged in or game ID is missing.");
+
+        if (!auth.currentUser) {
+            Alert.alert('Not Authenticated', 'You must be logged in to add a game.');
+            navigation.navigate('Login');
+            return;
+        }
+
+        if (!gameDetails.id) {
+            Alert.alert("Error", "Cannot save game. Game ID is missing.");
             return;
         }
 
         setIsSubmitting(true);
-        
-        const gameRef = doc(db, 'users', auth.currentUser.uid, 'library', gameDetails.id);
 
         if (nonCompletedStatuses.includes(newStatus)) {
             setNewDateBeaten(null);
         }
 
-        const dataToUpdate = {
-            title: newTitle.trim(),
-            platform: newPlatform,
-            genre: newGenre,
-            status: newStatus,
-            rating: newRating,
-            notes: newNotes.trim(),
-            dateBeaten: newDateBeaten
-        };
-
         try {
+            const dataToUpdate = {
+                title: newTitle.trim(),
+                platform: newPlatform,
+                genre: newGenre,
+                status: newStatus,
+                rating: newRating,
+                dateBeaten: newDateBeaten,
+                notes: newNotes.trim()
+            };
+
+            if (newLocalImageUri) {
+                // ------------------------------------------------------
+                // DELETE OLD IMAGE IF PRESENT
+                // ------------------------------------------------------
+                const uploadResult = await uploadImageFromUri(newLocalImageUri);
+                if (uploadResult) {
+                    dataToUpdate.imageUrl = uploadResult.downloadURL;
+                    dataToUpdate.imagePath = uploadResult.storagePath;
+            }}
+
+            const gameRef = doc(db, 'users', auth.currentUser.uid, 'library', gameDetails.id);
             await updateDoc(gameRef, dataToUpdate);
             Alert.alert("Success", "Game details updated successfully!");
             navigation.goBack();
         } catch (error) {
+            console.error('Error updating document: ', error);
             Alert.alert("Error", "Could not update game details. Please try again.");
         } finally {
             setIsSubmitting(false);
@@ -148,6 +178,16 @@ export default function EditGameScreen({ route, navigation }) {
                 </View>
             </Pressable>
 
+            <Text style={styles.label}>Cover Image (Optional)</Text>
+            {(newLocalImageUri || currentImageUrl) && (
+                <Image source={{ uri: newLocalImageUri ? newLocalImageUri : currentImageUrl }} style={styles.imagePreview} />
+            )}
+            <Pressable onPress={handleChooseImage} disabled={isSubmitting} style={styles.imageButton}>
+                <Text style={styles.imageButtonText}>
+                    {(newLocalImageUri || currentImageUrl) ? "Change Selected Image" : "Select Custom Image"}
+                </Text>
+            </Pressable>
+
             <Text style={styles.label}>Personal Notes (Optional)</Text>
             <TextInput style={[styles.input, styles.textArea]} placeholder="Any thoughts, tips, or memories..." value={newNotes} onChangeText={setNewNotes} multiline numberOfLines={4} />
 
@@ -185,4 +225,33 @@ const styles = StyleSheet.create({
     placeholderTextRating: { fontSize: 16, color: '#aaa' },
     starsRow: { flexDirection: 'row' },
     starDisplay: { marginRight: 2 },
+    imageButton: {
+        backgroundColor: '#007AFF',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 6,
+        alignItems: 'center',
+        marginBottom: 10,
+        marginTop: 5,
+    },
+    imageButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    imagePreview: {
+        width: '50%',
+        aspectRatio: 9 / 16,
+        alignSelf: 'center',
+        marginBottom: 15,
+        backgroundColor: '#e0e0e0',
+        borderRadius: 6,
+    },
+    loadingContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 10,
+    },
+    buttonContainer: { marginTop: 30 },
 });
