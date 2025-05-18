@@ -31,7 +31,7 @@ export const pickImageLocal = async (sourceOption) => {
     const imagePickerOptions = {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        aspect: [16, 9],
+        aspect: [9, 16],
         quality: 0.7,
     };
 
@@ -45,6 +45,7 @@ export const pickImageLocal = async (sourceOption) => {
         console.log("Image picking was cancelled or no assets selected.");
         return null;
     }
+
     return pickerResult.assets[0].uri;
 };
 
@@ -68,7 +69,7 @@ export const uploadImageFromUri = async (localUri) => {
 
         await uploadBytes(imageRef, blob);
         const downloadURL = await getDownloadURL(imageRef);
-        return downloadURL;
+        return { downloadURL, storagePath };
     } catch (error) {
         console.error("Error in uploadImageFromUri:", error);
         throw new Error(`Image upload failed: ${error.message}`);
