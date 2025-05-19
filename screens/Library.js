@@ -113,9 +113,10 @@ const styles = StyleSheet.create({
         paddingBottom: 20,
     },
     headerButton: {
+        width: 44,
+        height: 44,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 15,
     },
     centeredMessageContainer: {
         flex: 1,
