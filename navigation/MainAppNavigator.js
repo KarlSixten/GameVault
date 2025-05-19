@@ -138,7 +138,7 @@ function LibraryStackNavigator() {
             <LibraryStack.Screen
                 name="EditGame"
                 component={EditGameScreen}
-                options={{ title: 'Edit Game', presentation: 'modal' }}
+                options={{ title: 'Edit Game Details', presentation: 'modal' }}
             />
         </LibraryStack.Navigator>
     );
