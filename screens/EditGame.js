@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
     View, Text, StyleSheet, ScrollView, TextInput, Alert,
-    Pressable, Image, ActivityIndicator, KeyboardAvoidingView, Platform
+    Pressable, Image, ActivityIndicator, KeyboardAvoidingView
 } from 'react-native';
 import { db, auth, storage } from '../util/auth/firebaseConfig';
 import { updateDoc, doc, Timestamp } from 'firebase/firestore';
@@ -147,7 +147,6 @@ export default function EditGameScreen({ route, navigation }) {
             <ScrollView
                 contentContainerStyle={styles.container}
                 showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
             >
 
                 <Text style={styles.label}>Title *</Text>

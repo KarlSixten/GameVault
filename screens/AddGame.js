@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
     View, Text, StyleSheet, ScrollView, TextInput, Alert,
-    Pressable, Image, ActivityIndicator, KeyboardAvoidingView, Platform
+    Pressable, Image, ActivityIndicator, KeyboardAvoidingView
 } from 'react-native';
 import { db, auth } from '../util/auth/firebaseConfig';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
