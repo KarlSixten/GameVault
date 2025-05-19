@@ -97,6 +97,6 @@ export const chooseImageSourceAlert = (onLocalImageUriPicked) => {
             },
             { text: "Cancel", style: "cancel", onPress: () => onLocalImageUriPicked(null) },
         ],
-        { cancelable: true, onDismiss: () => onLocalImageUriPicked(null) }
+        { cancelable: true }
     );
 };

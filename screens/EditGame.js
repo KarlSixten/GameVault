@@ -93,9 +93,14 @@ export default function EditGameScreen({ route, navigation }) {
         }
 
         setIsSubmitting(true);
+        
+        let dateBeatenToSaveWithLogic = newDateBeaten;
 
         if (nonCompletedStatuses.includes(newStatus)) {
-            setNewDateBeaten(null);
+            dateBeatenToSaveWithLogic = null;
+            if (newDateBeaten !== null) {
+                 setNewDateBeaten(null);
+            }
         }
 
         try {
@@ -105,7 +110,7 @@ export default function EditGameScreen({ route, navigation }) {
                 genre: newGenre,
                 status: newStatus,
                 rating: newRating,
-                dateBeaten: newDateBeaten,
+                dateBeaten: dateBeatenToSaveWithLogic,
                 notes: newNotes.trim()
             };
 
@@ -127,9 +132,6 @@ export default function EditGameScreen({ route, navigation }) {
                     dataToUpdate.imagePath = uploadResult.storagePath;
                 }
             }
-
-
-
 
             const gameRef = doc(db, 'users', auth.currentUser.uid, 'library', gameDetails.id);
             await updateDoc(gameRef, dataToUpdate);
@@ -291,7 +293,7 @@ const styles = StyleSheet.create({
         marginBottom: 15, minHeight: 50,
     },
     pickerTriggerText: { fontSize: 16, color: colors.textPrimary },
-    placeholderTextPicker: { fontSize: 16, color: colors.placeholderText },
+    placeholderTextPicker: { fontSize: 16, color: colors.placeholder },
     starsRow: { flexDirection: 'row' },
     starDisplay: { marginRight: 2 },
     imagePreviewContainer: { alignItems: 'center', marginBottom: 10 },

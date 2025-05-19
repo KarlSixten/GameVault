@@ -8,6 +8,8 @@ import { useState, useLayoutEffect, useCallback } from "react";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { convertFirestoreTimestampToJSDate } from "../util/convert";
 
+import colors from "../theme/colors";
+
 const formatFirebaseDate = (timestamp) => {
     if (!timestamp) {
         return;
@@ -296,7 +298,7 @@ const InfoRow = ({ label, value, iconName }) => (
 const styles = StyleSheet.create({
     scrollView: {
         flex: 1,
-        backgroundColor: "#f0f0f0",
+        backgroundColor: colors.backgroundMain,
     },
     container: {
         paddingBottom: 40,
@@ -306,16 +308,16 @@ const styles = StyleSheet.create({
     gameTitle: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: "#333",
+        color: colors.textPrimary,
         marginBottom: 25,
         textAlign: 'center',
     },
     section: {
-        backgroundColor: "#ffffff",
+        backgroundColor: colors.backgroundPaper,
         borderRadius: 12,
         padding: 18,
         marginBottom: 20,
-        shadowColor: "#000",
+        shadowColor: colors.backgroundDark,
         shadowOffset: {
             width: 0,
             height: 1,
@@ -327,10 +329,10 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: '600',
-        color: "#444",
+        color: colors.textPrimary,
         marginBottom: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#eee',
+        borderBottomColor: colors.separator,
         paddingBottom: 8,
     },
     infoRow: {
@@ -343,13 +345,13 @@ const styles = StyleSheet.create({
     },
     infoLabel: {
         fontSize: 16,
-        color: "#555",
+        color: colors.textSecondary,
         fontWeight: '500',
         marginRight: 8,
     },
     infoValue: {
         fontSize: 16,
-        color: "#333",
+        color: colors.textPrimary,
         flexShrink: 1,
     },
     ratingContainer: {
@@ -361,13 +363,13 @@ const styles = StyleSheet.create({
     },
     notesText: {
         fontSize: 15,
-        color: "#444",
+        color: colors.textPrimary,
         lineHeight: 22,
         paddingTop: 5,
     },
     errorText: {
         fontSize: 18,
-        color: 'red',
+        color: colors.error,
         textAlign: 'center',
         marginTop: 50,
     },
@@ -377,7 +379,7 @@ const styles = StyleSheet.create({
     sliderLabel: {
         fontSize: 16,
         fontWeight: '600',
-        color: "#333",
+        color: colors.textPrimary,
         textAlign: 'center',
         marginBottom: 10,
     },
@@ -392,7 +394,7 @@ const styles = StyleSheet.create({
     sliderHintText: {
         textAlign: 'right',
         fontSize: 12,
-        color: '#777',
+        color: colors.textSecondary,
         marginBottom: 5,
     },
     loadingContainer: {
@@ -414,23 +416,22 @@ const styles = StyleSheet.create({
         width: 180,
         height: 320,
         borderRadius: 8,
-        backgroundColor: '#e0e0e0',
+        backgroundColor: colors.placeholder,
         resizeMode: 'cover',
     },
     imagePlaceholder: {
         width: 180,
         height: 320,
         borderRadius: 8,
-        backgroundColor: '#e9e9e9',
+        backgroundColor: colors.backgroundPaper,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#ddd',
+        borderColor: colors.border,
     },
     imagePlaceholderText: {
         marginTop: 10,
-        color: '#aaa',
+        color: colors.placeholder,
         fontSize: 16,
     },
-
 });
