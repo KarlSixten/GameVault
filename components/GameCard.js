@@ -12,36 +12,45 @@ const GameCard = ({ game }) => {
 
     return (
         <View style={styles.card}>
-            <Text style={styles.title}>{game.title || 'No Title'}</Text>
-            <Text style={styles.platform}>{game.platform || 'N/A Platform'}</Text>
+            <View style={styles.textContentContainer}>
+                <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">{game.title || 'No Title'}</Text>
+                <Text style={styles.platform} numberOfLines={1} ellipsizeMode="tail">{game.platform || 'N/A Platform'}</Text>
 
-            <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Genre:</Text>
-                <Text style={styles.detailValue}>{game.genre}</Text>
+                <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Genre:</Text>
+                    <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="tail">{game.genre || 'N/A'}</Text>
+                </View>
+
+                {game.status && (
+                    <View style={styles.detailRow}>
+                        <Text style={styles.detailLabel}>Status:</Text>
+                        <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="tail">{game.status}</Text>
+                    </View>
+                )}
+
+                {game.rating !== null && (
+                    <View style={styles.ratingContainer}>
+                        <Text style={styles.detailLabel}>Rating:</Text>
+                        <View style={styles.starsWrapper}>
+                            {[...Array(5)].map((_, index) => (
+                                <Ionicons
+                                    key={index}
+                                    name={index < game.rating ? 'star' : 'star-outline'}
+                                    size={20}
+                                    color="#FFC107"
+                                    style={styles.starIcon}
+                                />
+                            ))}
+                        </View>
+                    </View>
+                )}
             </View>
 
-            {game.status && (
-                <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Status:</Text>
-                <Text style={styles.detailValue}>{game.status}</Text>
-            </View>)
-            }
-
-            {game.rating !== null && typeof game.rating === 'number' && (
-                <View style={styles.ratingContainer}>
-                    <Text style={styles.detailLabel}>Rating:</Text>
-                    <View style={styles.starsWrapper}>
-                        {[...Array(5)].map((_, index) => (
-                            <Ionicons
-                                key={index}
-                                name={index < game.rating ? 'star' : 'star-outline'}
-                                size={20}
-                                color="#FFC107"
-                                style={styles.starIcon}
-                            />
-                        ))}
-                    </View>
-                </View>
+            {game.imageUrl && (
+                <Image
+                    source={{ uri: game.imageUrl }}
+                    style={styles.cardImage}
+                />
             )}
         </View>
     );
@@ -61,43 +70,52 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 0.15,
         shadowRadius: 3.84,
+        flexDirection: 'row',
+        alignItems: 'flex-start',
     },
-    image: {
-        width: 80,
-        height: 100,
+    textContentContainer: {
+        flex: 1,
+        marginRight: 12,
+    },
+    cardImage: {
+        width: 45,
+        height: 80,
+        borderRadius: 6,
+        resizeMode: 'cover',
+        backgroundColor: '#e0e0e0',
     },
     title: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: 'bold',
         color: '#333333',
-        marginBottom: 4,
+        marginBottom: 3,
     },
     platform: {
-        fontSize: 15,
+        fontSize: 14,
         color: '#555555',
-        marginBottom: 12,
+        marginBottom: 10,
     },
     detailRow: {
         flexDirection: 'row',
-        marginBottom: 6,
+        marginBottom: 5,
         alignItems: 'flex-start',
     },
     detailLabel: {
-        fontSize: 14,
+        fontSize: 13,
         color: '#444444',
         fontWeight: '600',
-        marginRight: 5,
+        marginRight: 4,
     },
     detailValue: {
-        fontSize: 14,
+        fontSize: 13,
         color: '#666666',
         flexShrink: 1,
     },
     ratingContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 8,
-        marginBottom: 4,
+        marginTop: 6,
+        marginBottom: 2,
     },
     starsWrapper: {
         flexDirection: 'row',
