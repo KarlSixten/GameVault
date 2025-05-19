@@ -4,7 +4,7 @@ import {
     Pressable, Image, ActivityIndicator, KeyboardAvoidingView
 } from 'react-native';
 import { db, auth, storage } from '../util/auth/firebaseConfig';
-import { updateDoc, doc, Timestamp } from 'firebase/firestore';
+import { updateDoc, doc } from 'firebase/firestore';
 import { ref, deleteObject } from "firebase/storage";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
