@@ -77,12 +77,9 @@ export default function SearchGameScreen() {
         try {
             const wishlistRef = collection(db, 'users', auth.currentUser.uid, 'wishlist');
             const gameDataForWishlist = {
-                rawgId: rawgGame.id,
                 title: rawgGame.name || 'N/A',
-                platform: rawgGame.platforms?.map(p => p.platform.name).join(', ') || 'N/A',
-                genre: rawgGame.genres?.map(g => g.name).join(', ') || 'N/A',
                 createdAt: Timestamp.now(),
-                dateBeaten: null,
+                imageUrl: rawgGame.background_image
             };
 
             await addDoc(wishlistRef, gameDataForWishlist);
@@ -103,11 +100,6 @@ export default function SearchGameScreen() {
             )}
             <View style={styles.gameInfo}>
                 <Text style={styles.gameTitle}>{item.name}</Text>
-                {item.platforms && (
-                    <Text style={styles.gamePlatforms} numberOfLines={1}>
-                        Platforms: {item.platforms.map(p => p.platform.name).join(', ')}
-                    </Text>
-                )}
             </View>
             <Pressable
                 style={[styles.addButton, isAdding[item.id] && styles.addButtonDisabled]}
