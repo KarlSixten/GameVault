@@ -35,6 +35,7 @@ export default function EditGameScreen({ route, navigation }) {
 
     const [newLocalImageUri, setNewLocalImageUri] = useState(null);
     const currentImageUrl = gameDetails.imageUrl;
+    const currentImagePath = gameDetails.imagePath;
 
     const showDatePickerModal = () => setDatePickerVisibility(true);
     const handleDateConfirmedFromPicker = (confirmedDate) => { setNewDateBeaten(confirmedDate); };
@@ -109,15 +110,24 @@ export default function EditGameScreen({ route, navigation }) {
             };
 
             if (newLocalImageUri) {
-                // ------------------------------------------------------
-                // DELETE OLD IMAGE IF PRESENT
-                // ------------------------------------------------------
-                const uploadResult = await uploadImageFromUri(newLocalImageUri);
-                if (uploadResult) {
-                    dataToUpdate.imageUrl = uploadResult.downloadURL;
-                    dataToUpdate.imagePath = uploadResult.storagePath;
+                const imagePathToDelete = currentImagePath;
+                const imageFileRef = ref(storage, imagePathToDelete);
+
+                if (imagePathToDelete) {
+                    try {
+                        await deleteObject(imageFileRef);
+                    } catch (storageError) {
+                        console.error(`Failed to delete image from Storage (path: ${imagePathToDelete})`, storageError);
+                    }
                 }
             }
+
+            const uploadResult = await uploadImageFromUri(newLocalImageUri);
+            if (uploadResult) {
+                dataToUpdate.imageUrl = uploadResult.downloadURL;
+                dataToUpdate.imagePath = uploadResult.storagePath;
+            }
+
 
             const gameRef = doc(db, 'users', auth.currentUser.uid, 'library', gameDetails.id);
             await updateDoc(gameRef, dataToUpdate);
@@ -221,7 +231,6 @@ export default function EditGameScreen({ route, navigation }) {
                     </Pressable>
                 </View>
 
-                {/* Modals */}
                 <StarRatingModalPicker
                     modalVisible={ratingModalVisible}
                     setModalVisible={setRatingModalVisible}
