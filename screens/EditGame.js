@@ -120,13 +120,15 @@ export default function EditGameScreen({ route, navigation }) {
                         console.error(`Failed to delete image from Storage (path: ${imagePathToDelete})`, storageError);
                     }
                 }
+
+                const uploadResult = await uploadImageFromUri(newLocalImageUri);
+                if (uploadResult) {
+                    dataToUpdate.imageUrl = uploadResult.downloadURL;
+                    dataToUpdate.imagePath = uploadResult.storagePath;
+                }
             }
 
-            const uploadResult = await uploadImageFromUri(newLocalImageUri);
-            if (uploadResult) {
-                dataToUpdate.imageUrl = uploadResult.downloadURL;
-                dataToUpdate.imagePath = uploadResult.storagePath;
-            }
+
 
 
             const gameRef = doc(db, 'users', auth.currentUser.uid, 'library', gameDetails.id);
