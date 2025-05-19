@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, Button, Alert, Pressable, Image } from 'react-native';
-import { db, auth } from '../firebaseConfig';
+import { db, auth } from '../util/auth/firebaseConfig';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { formatDateForDisplay } from '../util/convert';

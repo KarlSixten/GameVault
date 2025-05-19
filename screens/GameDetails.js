@@ -2,7 +2,7 @@ import { View, StyleSheet, Text, ScrollView, ActivityIndicator, Alert, Button, P
 import { useFocusEffect } from "@react-navigation/native";
 import Slider from "@react-native-community/slider";
 import { doc, getDoc, updateDoc, deleteDoc, Timestamp } from 'firebase/firestore';
-import { db, auth, storage } from '../firebaseConfig';
+import { db, auth, storage } from '../util/auth/firebaseConfig';
 import { ref, deleteObject } from "firebase/storage";
 import { useState, useLayoutEffect, useCallback } from "react";
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -124,7 +124,7 @@ export default function GameDetailsScreen({ route, navigation }) {
             setSliderValue(0);
         }
     }
-    
+
     const handleDeleteGame = async () => {
         if (!gameDetails?.id || !auth.currentUser) {
             Alert.alert("Error", "Cannot delete game. Missing game ID or user not logged in.");

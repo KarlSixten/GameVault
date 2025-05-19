@@ -10,10 +10,10 @@ import {
     Pressable,
     Alert,
 } from 'react-native';
-import { db, auth } from '../firebaseConfig';
+import { db, auth } from '../util/auth/firebaseConfig';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { debounce } from 'lodash';
-import { API_KEY } from '../rawgioAuth';
+import { API_KEY } from '../util/auth/rawgioAuth';
 
 export default function SearchGameScreen() {
     const [searchQuery, setSearchQuery] = useState('');

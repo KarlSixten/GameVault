@@ -1,7 +1,7 @@
 import { Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage, auth } from '../../firebaseConfig'; // Assuming auth is here
+import { storage, auth } from '../../util/auth/firebaseConfig';
 
 const getPermissions = async () => {
     const cameraPermission = await ImagePicker.getCameraPermissionsAsync();

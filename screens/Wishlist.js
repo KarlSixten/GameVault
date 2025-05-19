@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, FlatList, Pressable } from 'react-native';
-import { db, auth} from '../firebaseConfig'
+import { View, StyleSheet, FlatList, Pressable } from 'react-native';
+import { db, auth} from '../util/auth/firebaseConfig'
 import { useCollection } from 'react-firebase-hooks/firestore';
 import { collection } from 'firebase/firestore';
 import { useLayoutEffect } from 'react'

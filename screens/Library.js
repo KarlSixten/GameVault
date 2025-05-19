@@ -2,7 +2,7 @@ import { View, Pressable, StyleSheet, FlatList, ScrollView } from 'react-native'
 import { useLayoutEffect } from 'react';
 import { useCollection } from 'react-firebase-hooks/firestore';
 import { collection } from 'firebase/firestore';
-import { db, auth } from '../firebaseConfig';
+import { db, auth } from '../util/auth/firebaseConfig';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import GameCard from '../components/GameCard';
