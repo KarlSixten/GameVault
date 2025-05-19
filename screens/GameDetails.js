@@ -124,12 +124,9 @@ export default function GameDetailsScreen({ route, navigation }) {
             setSliderValue(0);
         }
     }
-
-    // -------------------------------
-    // Lader ikke til at slette billeder
-    // -------------------------------
+    
     const handleDeleteGame = async () => {
-        if (!gameDetails.id || !auth.currentUser) {
+        if (!gameDetails?.id || !auth.currentUser) {
             Alert.alert("Error", "Cannot delete game. Missing game ID or user not logged in.");
             return;
         }
@@ -144,29 +141,30 @@ export default function GameDetailsScreen({ route, navigation }) {
                 },
                 {
                     text: "Delete",
+                    style: "destructive",
                     onPress: async () => {
                         setIsUpdating(true);
                         try {
-                            const imagePathToDelete = gameDetails.imageStoragePath;
-                            
+                            const imagePathToDelete = gameDetails.imagePath;
+
                             if (imagePathToDelete) {
                                 const imageFileRef = ref(storage, imagePathToDelete);
 
                                 try {
                                     await deleteObject(imageFileRef);
                                 } catch (storageError) {
-                                    console.error(`Failed to delete image from Storage (path: ${imagePathToDelete}):`, storageError);
+                                    console.error(`Failed to delete image from Storage (path: ${imagePathToDelete})`, storageError);
                                 }
                             }
 
-                            const gameRef = doc(db, 'users', auth.currentUser.uid, 'library', gameDetails.id);
-                            await deleteDoc(gameRef);
+                            const gameFirestoreRef = doc(db, 'users', auth.currentUser.uid, 'library', gameDetails.id);
+                            await deleteDoc(gameFirestoreRef);
 
                             Alert.alert("Success", `"${gameDetails.title}" has been deleted.`);
-
                             navigation.goBack();
+
                         } catch (error) {
-                            console.error("Error deleting game:", error);
+                            console.error("[DELETE_GAME] Critical error during delete game process:", error);
                             Alert.alert("Error", "Could not delete game. Please try again.");
                         } finally {
                             setIsUpdating(false);
