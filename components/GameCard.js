@@ -28,7 +28,7 @@ const GameCard = ({ game }) => {
                     </View>
                 )}
 
-                {game.rating !== null && (
+                {game.rating && game.rating !== null && (
                     <View style={styles.ratingContainer}>
                         <Text style={styles.detailLabel}>Rating:</Text>
                         <View style={styles.starsWrapper}>

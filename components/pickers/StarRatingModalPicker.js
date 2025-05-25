@@ -1,4 +1,6 @@
 import { Modal, View, Text, StyleSheet, Pressable, Button } from 'react-native';
+
+import colors from '../../theme/colors';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const StarRatingModalPicker = ({ modalVisible, setModalVisible, currentRating, onRatingConfirm }) => {
@@ -32,7 +34,7 @@ const StarRatingModalPicker = ({ modalVisible, setModalVisible, currentRating, o
                                 <Ionicons
                                     name={starValue <= (currentRating || 0) ? "star" : "star-outline"}
                                     size={40}
-                                    color="#FFC107" // Gold/yellow
+                                    color={colors.accent}
                                 />
                             </Pressable>
                         ))}

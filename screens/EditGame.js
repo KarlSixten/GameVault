@@ -1,16 +1,21 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, Button, Alert, Pressable, Image } from 'react-native';
-import { db, auth } from '../firebaseConfig';
+import {
+    View, Text, StyleSheet, ScrollView, TextInput, Alert,
+    Pressable, Image, ActivityIndicator, KeyboardAvoidingView
+} from 'react-native';
+import { db, auth, storage } from '../util/auth/firebaseConfig';
 import { updateDoc, doc } from 'firebase/firestore';
+import { ref, deleteObject } from "firebase/storage";
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { formatDateForDisplay, convertFirestoreTimestampToJSDate } from '../util/convert';
-import { chooseImageSourceAlert, uploadImageFromUri } from '../components/pickers/ImagePicker'
 
+import { formatDateForDisplay, convertFirestoreTimestampToJSDate } from '../util/convert';
+import { chooseImageSourceAlert, uploadImageFromUri } from '../components/pickers/ImagePicker';
 import StarRatingModalPicker from '../components/pickers/StarRatingModalPicker';
 import DateModalPicker from '../components/pickers/DateModalPicker';
-import PickerWheel from '../components/pickers/PickerWheel'
-
+import PickerWheel from '../components/pickers/PickerWheel';
 import { platformOptions, genreOptions, statusOptions } from '../util/options';
+
+import colors from '../theme/colors';
 
 const nonCompletedStatuses = ['Playing', 'On Hold', 'Not Started', 'Dropped'];
 
@@ -30,6 +35,7 @@ export default function EditGameScreen({ route, navigation }) {
 
     const [newLocalImageUri, setNewLocalImageUri] = useState(null);
     const currentImageUrl = gameDetails.imageUrl;
+    const currentImagePath = gameDetails.imagePath;
 
     const showDatePickerModal = () => setDatePickerVisibility(true);
     const handleDateConfirmedFromPicker = (confirmedDate) => { setNewDateBeaten(confirmedDate); };
@@ -87,9 +93,14 @@ export default function EditGameScreen({ route, navigation }) {
         }
 
         setIsSubmitting(true);
+        
+        let dateBeatenToSaveWithLogic = newDateBeaten;
 
         if (nonCompletedStatuses.includes(newStatus)) {
-            setNewDateBeaten(null);
+            dateBeatenToSaveWithLogic = null;
+            if (newDateBeaten !== null) {
+                 setNewDateBeaten(null);
+            }
         }
 
         try {
@@ -99,19 +110,28 @@ export default function EditGameScreen({ route, navigation }) {
                 genre: newGenre,
                 status: newStatus,
                 rating: newRating,
-                dateBeaten: newDateBeaten,
+                dateBeaten: dateBeatenToSaveWithLogic,
                 notes: newNotes.trim()
             };
 
             if (newLocalImageUri) {
-                // ------------------------------------------------------
-                // DELETE OLD IMAGE IF PRESENT
-                // ------------------------------------------------------
+                const imagePathToDelete = currentImagePath;
+                const imageFileRef = ref(storage, imagePathToDelete);
+
+                if (imagePathToDelete) {
+                    try {
+                        await deleteObject(imageFileRef);
+                    } catch (storageError) {
+                        console.error(`Failed to delete image from Storage (path: ${imagePathToDelete})`, storageError);
+                    }
+                }
+
                 const uploadResult = await uploadImageFromUri(newLocalImageUri);
                 if (uploadResult) {
                     dataToUpdate.imageUrl = uploadResult.downloadURL;
                     dataToUpdate.imagePath = uploadResult.storagePath;
-            }}
+                }
+            }
 
             const gameRef = doc(db, 'users', auth.currentUser.uid, 'library', gameDetails.id);
             await updateDoc(gameRef, dataToUpdate);
@@ -134,108 +154,198 @@ export default function EditGameScreen({ route, navigation }) {
     }
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.label}>Title *</Text>
-            <TextInput style={styles.input} placeholder="e.g., Elden Ring" value={newTitle} onChangeText={setNewTitle} />
+        <KeyboardAvoidingView
+            behavior="padding"
+            style={styles.keyboardAvoidingContainer}
+        >
+            <ScrollView
+                contentContainerStyle={styles.container}
+                showsVerticalScrollIndicator={false}
+            >
 
-            <Text style={styles.label}>Platform *</Text>
-            <PickerWheel
-                values={platformOptions}
-                selectedValue={newPlatform}
-                onValueChange={(itemValue) => setNewPlatform(itemValue)}
-            />
+                <Text style={styles.label}>Title *</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="e.g., The Witcher 3"
+                    placeholderTextColor={colors.placeholderText}
+                    value={newTitle}
+                    onChangeText={setNewTitle}
+                />
 
-            <Text style={styles.label}>Genre *</Text>
-            <PickerWheel
-                values={genreOptions}
-                selectedValue={newGenre}
-                onValueChange={(itemValue) => setNewGenre(itemValue)}
-            />
+                <Text style={styles.label}>Platform *</Text>
+                <PickerWheel values={platformOptions} selectedValue={newPlatform} onValueChange={setNewPlatform} />
+                <Text style={styles.label}>Genre *</Text>
+                <PickerWheel values={genreOptions} selectedValue={newGenre} onValueChange={setNewGenre} />
+                <Text style={styles.label}>Status *</Text>
+                <PickerWheel values={statusOptions} selectedValue={newStatus} onValueChange={setNewStatus} />
 
-            <Text style={styles.label}>Status *</Text>
-            <PickerWheel
-                values={statusOptions}
-                selectedValue={newStatus}
-                onValueChange={(itemValue) => setNewStatus(itemValue)}
-            />
+                {!nonCompletedStatuses.includes(newStatus) && (
+                    <View>
+                        <Text style={styles.label}>Date Beaten (Optional)</Text>
+                        <Pressable onPress={showDatePickerModal} style={styles.pickerTrigger}>
+                            <Text style={styles.pickerTriggerText}>
+                                {newDateBeaten ? formatDateForDisplay(newDateBeaten) : "Select Date"}
+                            </Text>
+                            <Ionicons name="calendar-outline" size={22} color={colors.textSecondary} />
+                        </Pressable>
+                    </View>
+                )}
 
-            {newStatus !== null && !nonCompletedStatuses.includes(newStatus) && (
-                <View>
-                    <Text style={styles.label}>Date Beaten (Optional)</Text>
-                    <Pressable onPress={showDatePickerModal}>
-                        <View style={styles.datePickerInput}>
-                            <Text style={styles.datePickerText}>{formatDateForDisplay(newDateBeaten)}</Text>
-                        </View>
+                <Text style={styles.label}>Rating (Optional)</Text>
+                <Pressable onPress={openRatingModal} style={styles.pickerTrigger}>
+                    {renderStarsForDisplay(newRating)}
+                </Pressable>
+
+                <Text style={styles.label}>Cover Image (Optional)</Text>
+                {(newLocalImageUri || currentImageUrl) && (
+                    <Image source={{ uri: newLocalImageUri ? newLocalImageUri : currentImageUrl }} style={styles.imagePreview} />
+                )}
+                <Pressable onPress={handleChooseImage} disabled={isSubmitting} style={styles.imageSelectButton}>
+                    <Text style={styles.imageSelectButtonText}>
+                        {(newLocalImageUri || currentImageUrl) ? "Change Selected Image" : "Select Custom Image"}
+                    </Text>
+                </Pressable>
+
+                <Text style={styles.label}>Personal Notes (Optional)</Text>
+                <TextInput
+                    style={[styles.input, styles.textArea]}
+                    placeholder="Any thoughts, tips, or memories..."
+                    placeholderTextColor={colors.placeholderText}
+                    value={newNotes}
+                    onChangeText={setNewNotes}
+                    multiline
+                    numberOfLines={4}
+                />
+
+                <View style={styles.submitButtonContainer}>
+                    <Pressable
+                        style={({ pressed }) => [
+                            styles.button, styles.submitButton,
+                            pressed && styles.buttonPressed,
+                            isSubmitting && styles.buttonDisabled,
+                        ]}
+                        onPress={handleSaveGame}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? (
+                            <ActivityIndicator size="small" color={colors.textLight} />
+                        ) : (
+                            <Text style={styles.buttonText}>Save Changes</Text>
+                        )}
                     </Pressable>
                 </View>
-            )}
 
-
-            <Text style={styles.label}>Rating (Optional)</Text>
-            <Pressable onPress={openRatingModal}>
-                <View style={styles.ratingInput}>
-                    {renderStarsForDisplay(newRating)}
-                </View>
-            </Pressable>
-
-            <Text style={styles.label}>Cover Image (Optional)</Text>
-            {(newLocalImageUri || currentImageUrl) && (
-                <Image source={{ uri: newLocalImageUri ? newLocalImageUri : currentImageUrl }} style={styles.imagePreview} />
-            )}
-            <Pressable onPress={handleChooseImage} disabled={isSubmitting} style={styles.imageButton}>
-                <Text style={styles.imageButtonText}>
-                    {(newLocalImageUri || currentImageUrl) ? "Change Selected Image" : "Select Custom Image"}
-                </Text>
-            </Pressable>
-
-            <Text style={styles.label}>Personal Notes (Optional)</Text>
-            <TextInput style={[styles.input, styles.textArea]} placeholder="Any thoughts, tips, or memories..." value={newNotes} onChangeText={setNewNotes} multiline numberOfLines={4} />
-
-            <View style={styles.buttonContainer}>
-                <Button title="Save Game" onPress={handleSaveGame} disabled={isSubmitting} color="#007bff" />
-            </View>
-
-            <StarRatingModalPicker
-                modalVisible={ratingModalVisible}
-                setModalVisible={setRatingModalVisible}
-                currentRating={newRating}
-                onRatingConfirm={handleRatingConfirmed}
-            />
-
-            <DateModalPicker
-                isVisible={datePickerVisible}
-                currentDate={newDateBeaten}
-                onDateSelected={handleDateConfirmedFromPicker}
-                onCloseModal={() => setDatePickerVisibility(false)}
-                maximumDate={new Date()}
-            />
-        </ScrollView>
+                <StarRatingModalPicker
+                    modalVisible={ratingModalVisible}
+                    setModalVisible={setRatingModalVisible}
+                    currentRating={newRating}
+                    onRatingConfirm={handleRatingConfirmed}
+                />
+                <DateModalPicker
+                    isVisible={datePickerVisible}
+                    currentDate={newDateBeaten}
+                    onDateSelected={handleDateConfirmedFromPicker}
+                    onCloseModal={() => setDatePickerVisibility(false)}
+                    maximumDate={new Date()}
+                />
+            </ScrollView>
+        </KeyboardAvoidingView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { padding: 20, paddingBottom: 40 },
-    label: { fontSize: 16, marginBottom: 5, marginTop: 15, fontWeight: 'bold', color: '#333' },
-    input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#ddd', paddingHorizontal: 12, paddingVertical: 10, fontSize: 16, borderRadius: 6, marginBottom: 10, color: '#333' },
+    keyboardAvoidingContainer: {
+        flex: 1,
+        backgroundColor: colors.backgroundMain,
+    },
+    container: {
+        paddingHorizontal: 20,
+        paddingBottom: 40,
+        paddingTop: 10,
+    },
+    centeredMessageContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    messageText: {
+        fontSize: 16,
+        color: colors.textSecondary,
+    },
+    screenTitle: {
+        fontSize: 28, fontWeight: 'bold', color: colors.textPrimary,
+        textAlign: 'center', marginBottom: 30, marginTop: 10,
+    },
+    label: {
+        fontSize: 16, marginBottom: 8, marginTop: 15,
+        fontWeight: '600', color: colors.textPrimary,
+    },
+    input: {
+        backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
+        paddingHorizontal: 15, paddingVertical: 12, fontSize: 16,
+        borderRadius: 8, marginBottom: 15, color: colors.textPrimary,
+    },
     textArea: { height: 100, textAlignVertical: 'top' },
-    datePickerInput: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#ddd', paddingHorizontal: 12, paddingVertical: 12, fontSize: 16, borderRadius: 6, marginBottom: 10, justifyContent: 'center', minHeight: 48 },
-    datePickerText: { fontSize: 16, color: '#333' },
-    buttonContainer: { marginTop: 20 },
-    ratingInput: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#ddd', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 6, marginBottom: 10, justifyContent: 'center', alignItems: 'flex-start', minHeight: 48 },
-    placeholderTextRating: { fontSize: 16, color: '#aaa' },
+    pickerTrigger: {
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+        backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
+        paddingHorizontal: 15, paddingVertical: 12, borderRadius: 8,
+        marginBottom: 15, minHeight: 50,
+    },
+    pickerTriggerText: { fontSize: 16, color: colors.textPrimary },
+    placeholderTextPicker: { fontSize: 16, color: colors.placeholder },
     starsRow: { flexDirection: 'row' },
     starDisplay: { marginRight: 2 },
-    imageButton: {
-        backgroundColor: '#007AFF',
+    imagePreviewContainer: { alignItems: 'center', marginBottom: 10 },
+    imagePreviewStyle: {
+        width: '50%',
+        aspectRatio: 9 / 16,
+        backgroundColor: colors.placeholder,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: colors.border,
+    },
+    imagePlaceholder: {
+        width: '50%',
+        aspectRatio: 9 / 16,
+        backgroundColor: '#f0f0f0',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: colors.border,
+    },
+    imageSelectButton: {
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+        backgroundColor: colors.secondary, paddingVertical: 12, paddingHorizontal: 20,
+        borderRadius: 8, marginBottom: 10, marginTop: 8,
+    },
+    imageActionButtonText: { color: colors.textLight, fontSize: 16, fontWeight: '500' },
+    submitButtonContainer: { marginTop: 30, marginBottom: 20 },
+    button: {
+        height: 50, borderRadius: 8, justifyContent: 'center', alignItems: 'center',
+        shadowColor: "#000", shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15, shadowRadius: 3.84, elevation: 3,
+    },
+    submitButton: { backgroundColor: colors.primary },
+    buttonText: { color: colors.textLight, fontSize: 18, fontWeight: '600' },
+    buttonPressed: { opacity: 0.8 },
+    buttonDisabled: { backgroundColor: colors.primary + '99' },
+    errorText: { fontSize: 18, color: colors.error, textAlign: 'center', marginTop: 50, },
+
+    imageSelectButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colors.secondary,
         paddingVertical: 12,
         paddingHorizontal: 20,
-        borderRadius: 6,
-        alignItems: 'center',
-        marginBottom: 10,
-        marginTop: 5,
+        borderRadius: 8,
+        marginBottom: 15,
+        marginTop: 8,
     },
-    imageButtonText: {
-        color: '#fff',
+    imageSelectButtonText: {
+        color: colors.textLight,
         fontSize: 16,
         fontWeight: '500',
     },
@@ -243,15 +353,10 @@ const styles = StyleSheet.create({
         width: '50%',
         aspectRatio: 9 / 16,
         alignSelf: 'center',
-        marginBottom: 15,
-        backgroundColor: '#e0e0e0',
-        borderRadius: 6,
+        marginBottom: 10,
+        backgroundColor: colors.placeholder,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: colors.border,
     },
-    loadingContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 10,
-    },
-    buttonContainer: { marginTop: 30 },
 });

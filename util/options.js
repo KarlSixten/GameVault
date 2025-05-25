@@ -1,5 +1,5 @@
 export const platformOptions = [
-    { label: 'Select a Platform...', value: '' },
+    { label: 'Select a Platform...', value: null },
     { label: 'PC (Steam, Epic, etc.)', value: 'PC' },
     { label: 'PlayStation 5 (PS5)', value: 'PS5' },
     { label: 'Xbox Series X/S', value: 'Xbox Series X/S' },
