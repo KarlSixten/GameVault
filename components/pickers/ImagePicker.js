@@ -31,6 +31,7 @@ export const pickImageLocal = async (sourceOption) => {
     const imagePickerOptions = {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
+        // Aspect lader ikke til at virke helt
         aspect: [9, 16],
         quality: 0.7,
     };
@@ -42,7 +43,6 @@ export const pickImageLocal = async (sourceOption) => {
     }
 
     if (pickerResult.canceled || !pickerResult.assets || pickerResult.assets.length === 0) {
-        console.log("Image picking was cancelled or no assets selected.");
         return null;
     }
 
@@ -62,7 +62,7 @@ export const uploadImageFromUri = async (localUri) => {
         const response = await fetch(localUri);
         const blob = await response.blob();
 
-        const fileExtension = localUri.substring(localUri.lastIndexOf('.') + 1) || 'jpg';
+        const fileExtension = localUri.substring(localUri.lastIndexOf('.') + 1);
         const imageName = `${Date.now()}_${Math.random().toString(36).substring(2, 10)}.${fileExtension}`;
         const storagePath = `users/${userId}/gameImages/${imageName}`;
         const imageRef = ref(storage, storagePath);
@@ -71,7 +71,6 @@ export const uploadImageFromUri = async (localUri) => {
         const downloadURL = await getDownloadURL(imageRef);
         return { downloadURL, storagePath };
     } catch (error) {
-        console.error("Error in uploadImageFromUri:", error);
         throw new Error(`Image upload failed: ${error.message}`);
     }
 };
