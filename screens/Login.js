@@ -3,14 +3,15 @@ import {
     View,
     Text,
     TextInput,
-    StyleSheet,
     Alert,
     Pressable,
     ActivityIndicator,
     KeyboardAvoidingView,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import colors from '../theme/colors.js';
+
+import colors from '../theme/colors';
+import styles from '../theme/AuthStyles';
 
 export default function LoginScreen({ navigation }) {
     const [email, setEmail] = useState('');
@@ -62,8 +63,8 @@ export default function LoginScreen({ navigation }) {
 
                 <Pressable
                     style={({ pressed }) => [
-                        styles.button,
-                        styles.loginButton,
+                        styles.buttonBase,
+                        styles.primaryButton,
                         pressed && styles.buttonPressed,
                         isLoading && styles.buttonDisabled,
                     ]}
@@ -79,98 +80,17 @@ export default function LoginScreen({ navigation }) {
 
                 <Pressable
                     style={({ pressed }) => [
-                        styles.signUpLinkContainer,
-                        pressed && styles.linkPressed, // Optional: style for when pressed
+                        styles.linkContainer,
+                        pressed && styles.linkPressed,
                     ]}
-                    onPress={() => navigation.navigate('SignUp')} // Ensure 'SignUp' route exists
+                    onPress={() => navigation.navigate('SignUp')}
                     disabled={isLoading}
                 >
-                    <Text style={styles.signUpLinkText}>
-                        Don't have an account? <Text style={styles.signUpLinkTextBold}>Sign Up</Text>
+                    <Text style={styles.linkText}>
+                        Don't have an account? <Text style={styles.linkTextBold}>Sign Up</Text>
                     </Text>
                 </Pressable>
             </View>
         </KeyboardAvoidingView>
     );
 }
-
-const styles = StyleSheet.create({
-    keyboardAvoidingContainer: {
-        flex: 1,
-    },
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        paddingHorizontal: 30,
-        paddingBottom: 20,
-        backgroundColor: colors.backgroundMain,
-    },
-    title: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: colors.textPrimary,
-        textAlign: 'center',
-        marginBottom: 10,
-    },
-    subtitle: {
-        fontSize: 16,
-        color: colors.textSecondary,
-        textAlign: 'center',
-        marginBottom: 40,
-    },
-    input: {
-        backgroundColor: colors.surface,
-        height: 50,
-        borderColor: colors.border,
-        borderWidth: 1,
-        borderRadius: 8,
-        marginBottom: 15,
-        paddingHorizontal: 15,
-        fontSize: 16,
-        color: colors.textPrimary,
-    },
-    button: {
-        height: 50,
-        borderRadius: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 10,
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.15,
-        shadowRadius: 3.84,
-        elevation: 3,
-    },
-    loginButton: {
-        backgroundColor: colors.primary,
-    },
-    buttonText: {
-        color: colors.textLight,
-        fontSize: 18,
-        fontWeight: '600',
-    },
-    buttonPressed: {
-        opacity: 0.8,
-    },
-    buttonDisabled: {
-        backgroundColor: colors.primary + '99',
-    },
-    signUpLinkContainer: {
-        marginTop: 25,
-        alignItems: 'center',
-    },
-    signUpLinkText: {
-        color: colors.textSecondary,
-        fontSize: 15,
-    },
-    signUpLinkTextBold: {
-        color: colors.primary,
-        fontWeight: 'bold',
-    },
-    linkPressed: {
-        opacity: 0.7,
-    }
-});

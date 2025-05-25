@@ -80,7 +80,7 @@ export default function GameDetailsScreen({ route, navigation }) {
                     style={styles.headerButton}
 
                 >
-                    <Ionicons name="create-outline" size={30} color="#007AFF" />
+                    <Ionicons name="create-outline" size={30} color={colors.primary} />
                 </Pressable>
             ),
         });
@@ -221,7 +221,7 @@ export default function GameDetailsScreen({ route, navigation }) {
                                 key={index}
                                 name={index < gameDetails.rating ? 'star' : 'star-outline'}
                                 size={28}
-                                color="#FFC107"
+                                color={colors.accent}
                                 style={styles.starIcon}
                             />
                         ))}
@@ -268,9 +268,9 @@ export default function GameDetailsScreen({ route, navigation }) {
                                     setSliderValue(0);
                                 }
                             }}
-                            minimumTrackTintColor="#4CAF50"
-                            maximumTrackTintColor="#DDDDDD"
-                            thumbTintColor="#4CAF50"
+                            minimumTrackTintColor={colors.secondary}
+                            maximumTrackTintColor={colors.border}
+                            thumbTintColor={colors.secondary}
                         />
                     </View>
                 </View>
@@ -281,8 +281,9 @@ export default function GameDetailsScreen({ route, navigation }) {
                     <Text>Updating...</Text>
                 </View>
             )}
-            <Button title="Delete" onPress={handleDeleteGame} />
-
+            <Pressable onPress={handleDeleteGame} style={styles.deleteButton}>
+                <Text style={styles.deleteButtonText}>Delete from library</Text>
+            </Pressable>
         </ScrollView>
     );
 }
@@ -301,101 +302,86 @@ const styles = StyleSheet.create({
         backgroundColor: colors.backgroundMain,
     },
     container: {
-        paddingBottom: 40,
+        paddingVertical: 20,
         paddingHorizontal: 20,
-        paddingTop: 20,
     },
     gameTitle: {
-        fontSize: 28,
+        fontSize: 26,
         fontWeight: 'bold',
         color: colors.textPrimary,
-        marginBottom: 25,
+        marginBottom: 20,
         textAlign: 'center',
     },
     section: {
         backgroundColor: colors.backgroundPaper,
-        borderRadius: 12,
-        padding: 18,
+        borderRadius: 8,
+        padding: 15,
         marginBottom: 20,
-        shadowColor: colors.backgroundDark,
-        shadowOffset: {
-            width: 0,
-            height: 1,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 3,
+        borderColor: colors.border,
+        borderWidth: 1
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: '600',
         color: colors.textPrimary,
-        marginBottom: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.separator,
-        paddingBottom: 8,
+        marginBottom: 10,
     },
     infoRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 10,
+        marginBottom: 8,
+
     },
     infoIcon: {
-        marginRight: 10,
+        marginRight: 8,
+        color: colors.textSecondary,
     },
     infoLabel: {
-        fontSize: 16,
+        fontSize: 15,
         color: colors.textSecondary,
         fontWeight: '500',
-        marginRight: 8,
+        marginRight: 5,
     },
     infoValue: {
-        fontSize: 16,
+        fontSize: 15,
         color: colors.textPrimary,
         flexShrink: 1,
     },
     ratingContainer: {
         flexDirection: 'row',
-        marginTop: 5,
+        alignItems: 'center',
     },
     starIcon: {
-        marginRight: 3,
+        marginRight: 2,
     },
     notesText: {
         fontSize: 15,
         color: colors.textPrimary,
-        lineHeight: 22,
-        paddingTop: 5,
     },
     errorText: {
-        fontSize: 18,
+        fontSize: 16,
         color: colors.error,
         textAlign: 'center',
-        marginTop: 50,
+        marginTop: 30,
     },
     sliderSection: {
-        marginTop: 10,
+        borderRadius: 8,
     },
     sliderLabel: {
         fontSize: 16,
         fontWeight: '600',
         color: colors.textPrimary,
         textAlign: 'center',
-        marginBottom: 10,
+        marginBottom: 8,
     },
     sliderContainer: {
         alignItems: 'stretch',
-        paddingHorizontal: 10,
-    },
-    slider: {
-        width: '100%',
-        height: 40,
     },
     sliderHintText: {
-        textAlign: 'right',
+        textAlign: 'center',
         fontSize: 12,
         color: colors.textSecondary,
-        marginBottom: 5,
+        marginBottom: 3,
     },
     loadingContainer: {
         alignItems: 'center',
@@ -410,18 +396,18 @@ const styles = StyleSheet.create({
     },
     imageOuterContainer: {
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: 15,
     },
     gameImage: {
-        width: 180,
-        height: 320,
+        width: 160,
+        height: 284,
         borderRadius: 8,
         backgroundColor: colors.placeholder,
         resizeMode: 'cover',
     },
     imagePlaceholder: {
-        width: 180,
-        height: 320,
+        width: 160,
+        height: 284,
         borderRadius: 8,
         backgroundColor: colors.backgroundPaper,
         justifyContent: 'center',
@@ -430,8 +416,21 @@ const styles = StyleSheet.create({
         borderColor: colors.border,
     },
     imagePlaceholderText: {
-        marginTop: 10,
+        marginTop: 8,
         color: colors.placeholder,
-        fontSize: 16,
+        fontSize: 14,
     },
+    deleteButton: {
+        marginTop: 100,
+        height: 50,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: colors.error,
+    },
+    deleteButtonText: {
+        color: colors.textLight,
+        fontSize: 20,
+        fontWeight: '600',
+    }
 });

@@ -1,5 +1,4 @@
 import { Modal, View, Text, StyleSheet, Pressable, Button } from 'react-native';
-
 import colors from '../../theme/colors';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -26,7 +25,7 @@ const StarRatingModalPicker = ({ modalVisible, setModalVisible, currentRating, o
             animationType="fade"
         >
             <Pressable style={styles.modalOverlay} onPress={handleCancel}>
-                <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+                <Pressable style={styles.modalContent} >
                     <Text style={styles.modalTitle}>Rate this game</Text>
                     <View style={styles.starsRowModal}>
                         {[1, 2, 3, 4, 5].map((starValue) => (
@@ -40,9 +39,9 @@ const StarRatingModalPicker = ({ modalVisible, setModalVisible, currentRating, o
                         ))}
                     </View>
                     <View style={styles.modalActions}>
-                        <Button title="Clear Rating" onPress={handleClear} color="#FF6347" />
-                        <View style={{ width: 15 }} />
-                        <Button title="Cancel" onPress={handleCancel} color="#777" />
+                        <Button title="Clear Rating" onPress={handleClear} color={colors.error} />
+                        <View style={styles.actionsSpacer} />
+                        <Button title="Cancel" onPress={handleCancel} color={colors.textSecondary} />
                     </View>
                 </Pressable>
             </Pressable>
@@ -53,27 +52,22 @@ const StarRatingModalPicker = ({ modalVisible, setModalVisible, currentRating, o
 const styles = StyleSheet.create({
     modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
         justifyContent: 'center',
         alignItems: 'center',
     },
     modalContent: {
-        backgroundColor: '#fff',
+        backgroundColor: colors.backgroundPaper,
         padding: 25,
         borderRadius: 10,
         width: '85%',
         alignItems: 'center',
-        elevation: 5,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
     },
     modalTitle: {
         fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 25,
-        color: '#333',
+        color: colors.textPrimary,
     },
     starsRowModal: {
         flexDirection: 'row',
@@ -87,9 +81,13 @@ const styles = StyleSheet.create({
     modalActions: {
         flexDirection: 'row',
         justifyContent: 'space-evenly',
+        alignItems: 'center',
         width: '100%',
         marginTop: 10,
     },
+    actionsSpacer: {
+        width: 15,
+    }
 });
 
 export default StarRatingModalPicker;

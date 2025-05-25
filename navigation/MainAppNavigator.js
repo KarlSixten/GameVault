@@ -17,13 +17,9 @@ const LibraryStack = createNativeStackNavigator();
 const WishlistStack = createNativeStackNavigator();
 
 const stackNavigatorScreenOptions = {
-    headerStyle: {
-        backgroundColor: colors.surface,
-    },
-    headerTintColor: colors.primary,
     headerTitleStyle: {
         fontWeight: 'bold',
-        color: colors.textPrimary,
+        color: 'colors.textPrimary',
     },
     headerBackTitleVisible: false,
 };
@@ -44,11 +40,7 @@ export default function MainAppNavigator() {
                     return <Ionicons name={iconName} size={size} color={color} />;
                 },
 
-                tabBarActiveTintColor: colors.primary,
-                tabBarInactiveTintColor: colors.textSecondary,
                 tabBarStyle: {
-                    backgroundColor: colors.surface,
-                    paddingBottom: 0,
                     paddingTop: 5,
                     height: 85,
                     borderTopWidth: 1,
@@ -56,16 +48,6 @@ export default function MainAppNavigator() {
                 },
                 tabBarLabelStyle: {
                     fontSize: 11,
-                    fontWeight: '500',
-                    marginBottom: -5
-                },
-                headerStyle: {
-                    backgroundColor: colors.surface,
-                },
-                headerTintColor: colors.primary,
-                headerTitleStyle: {
-                    fontWeight: 'bold',
-                    color: colors.textPrimary,
                 },
             })}
         >

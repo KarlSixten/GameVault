@@ -6,6 +6,7 @@ import {
     FlatList,
     Text,
     ActivityIndicator,
+    Button
 } from 'react-native';
 import { useCollection } from 'react-firebase-hooks/firestore';
 import { collection } from 'firebase/firestore';
@@ -54,14 +55,13 @@ export default function LibraryScreen({ navigation }) {
     }
 
     if (error) {
-        console.error("Error fetching library:", error);
         return (
             <View style={[styles.screenContainer, styles.centeredMessageContainer]}>
                 <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
                 <Text style={[styles.messageText, styles.errorTextContent]}>
                     Error loading library.
                 </Text>
-                <Text style={styles.messageText}>Details: {error.message}</Text>
+                {error?.message &&<Text style={styles.messageText}>Details: {error?.message}</Text>}
             </View>
         );
     }
@@ -108,9 +108,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.backgroundMain,
     },
     listContentContainer: {
-        paddingHorizontal: 8,
-        paddingTop: 10,
-        paddingBottom: 20,
+        paddingVertical: 10,
     },
     headerButton: {
         width: 44,
@@ -128,42 +126,34 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: colors.textSecondary,
         textAlign: 'center',
-        lineHeight: 24,
     },
     errorTextContent: {
         color: colors.error,
         marginTop: 10,
-        marginBottom: 5,
         fontWeight: '500',
     },
     emptyTitle: {
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: 'bold',
         color: colors.textPrimary,
-        marginBottom: 12,
+        marginBottom: 10,
         textAlign: 'center',
     },
     emptySubtitle: {
-        fontSize: 16,
+        fontSize: 15,
         color: colors.textSecondary,
         textAlign: 'center',
-        marginBottom: 30,
-        paddingHorizontal: 20,
-        lineHeight: 22,
+        marginBottom: 20,
+        paddingHorizontal: 10,
     },
     themedButton: {
-        paddingVertical: 12,
-        paddingHorizontal: 30,
+        paddingVertical: 10,
+        paddingHorizontal: 25,
         borderRadius: 25,
-        marginTop: 10,
+        marginTop: 15,
         alignItems: 'center',
         justifyContent: 'center',
-        minWidth: 200,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 2,
+        backgroundColor: colors.primary,
     },
     themedButtonText: {
         color: colors.textLight,

@@ -15,6 +15,8 @@ import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { debounce } from 'lodash';
 import { API_KEY } from '../util/auth/rawgioAuth';
 
+import colors from '../theme/colors';
+
 export default function SearchGameScreen() {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
@@ -43,7 +45,6 @@ export default function SearchGameScreen() {
             const data = await response.json();
             setSearchResults(data.results || []);
         } catch (error) {
-            console.error("Failed to fetch games from RAWG:", error);
             setError(error.message || "Could not fetch games. Check your API key or network.");
             setSearchResults([]);
         } finally {
@@ -86,7 +87,6 @@ export default function SearchGameScreen() {
             Alert.alert("Wishlist", `"${rawgGame.name}" added to your wishlist!`);
 
         } catch (error) {
-            console.error("Failed to add to wishlist:", error);
             Alert.alert("Error", "Could not add game to wishlist. Please try again.");
         } finally {
             setIsAdding(prev => ({ ...prev, [rawgGame.id]: false }));
@@ -147,23 +147,24 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 10,
-        backgroundColor: '#f0f0f0',
+        backgroundColor: colors.backgroundMain,
     },
     searchInput: {
         height: 50,
-        borderColor: '#ccc',
+        borderColor: colors.border,
         borderWidth: 1,
         borderRadius: 8,
         paddingHorizontal: 15,
         marginBottom: 15,
         fontSize: 16,
-        backgroundColor: '#fff',
+        backgroundColor: colors.surface,
+        color: colors.textPrimary,
     },
     loader: {
         marginVertical: 20,
     },
     errorText: {
-        color: 'red',
+        color: colors.error,
         textAlign: 'center',
         marginVertical: 10,
         fontSize: 16,
@@ -172,29 +173,29 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginVertical: 20,
         fontSize: 16,
-        color: '#666',
+        color: colors.textSecondary,
     },
     list: {
         flex: 1,
     },
     gameItemContainer: {
         flexDirection: 'row',
-        backgroundColor: '#fff',
+        backgroundColor: colors.backgroundPaper,
         padding: 10,
         marginBottom: 10,
         borderRadius: 8,
         alignItems: 'center',
-        shadowColor: "#000",
+        shadowColor: colors.backgroundDark,
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
         shadowRadius: 3,
-        elevation: 2,
     },
     gameImage: {
         width: 80,
         height: 100,
         borderRadius: 4,
         marginRight: 10,
+        backgroundColor: colors.placeholder,
     },
     gameInfo: {
         flex: 1,
@@ -203,15 +204,10 @@ const styles = StyleSheet.create({
     gameTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#333',
-    },
-    gamePlatforms: {
-        fontSize: 12,
-        color: '#888',
-        marginTop: 4,
+        color: colors.textPrimary,
     },
     addButton: {
-        backgroundColor: '#007AFF',
+        backgroundColor: colors.primary,
         paddingVertical: 10,
         paddingHorizontal: 15,
         borderRadius: 20,
@@ -221,10 +217,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     addButtonDisabled: {
-        backgroundColor: '#a0c7ff',
+        backgroundColor: colors.primary + '77',
     },
     addButtonText: {
-        color: '#fff',
+        color: colors.textLight,
         fontSize: 14,
         fontWeight: '600',
     },

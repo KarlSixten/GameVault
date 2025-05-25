@@ -16,6 +16,8 @@ import PickerWheel from '../components/pickers/PickerWheel';
 import { platformOptions, genreOptions, statusOptions } from '../util/options';
 
 import colors from '../theme/colors';
+import styles from '../theme/AddEditGameStyles'
+
 
 const nonCompletedStatuses = ['Playing', 'On Hold', 'Not Started', 'Dropped'];
 
@@ -46,9 +48,8 @@ export default function EditGameScreen({ route, navigation }) {
 
     const renderStarsForDisplay = (currentRating) => {
         if (currentRating === null) {
-            return <Text style={styles.placeholderTextRating}>Tap to rate</Text>;
+            return <Text style={styles.placeholderTextPicker}>Tap to rate</Text>;
         }
-
         let stars = [];
         for (let i = 1; i <= 5; i++) {
             stars.push(
@@ -56,7 +57,7 @@ export default function EditGameScreen({ route, navigation }) {
                     key={i}
                     name={i <= currentRating ? "star" : "star-outline"}
                     size={28}
-                    color="#FFC107"
+                    color={colors.accent}
                     style={styles.starDisplay}
                 />
             );
@@ -93,13 +94,13 @@ export default function EditGameScreen({ route, navigation }) {
         }
 
         setIsSubmitting(true);
-        
+
         let dateBeatenToSaveWithLogic = newDateBeaten;
 
         if (nonCompletedStatuses.includes(newStatus)) {
             dateBeatenToSaveWithLogic = null;
             if (newDateBeaten !== null) {
-                 setNewDateBeaten(null);
+                setNewDateBeaten(null);
             }
         }
 
@@ -166,33 +167,51 @@ export default function EditGameScreen({ route, navigation }) {
                 <Text style={styles.label}>Title *</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder="e.g., The Witcher 3"
-                    placeholderTextColor={colors.placeholderText}
+                    placeholder="e.g., Cyberpunk 2077"
+                    placeholderTextColor={colors.placeholder}
                     value={newTitle}
                     onChangeText={setNewTitle}
                 />
 
                 <Text style={styles.label}>Platform *</Text>
-                <PickerWheel values={platformOptions} selectedValue={newPlatform} onValueChange={setNewPlatform} />
+                <PickerWheel
+                    values={platformOptions}
+                    selectedValue={newPlatform}
+                    onValueChange={setNewPlatform}
+                />
+
                 <Text style={styles.label}>Genre *</Text>
-                <PickerWheel values={genreOptions} selectedValue={newGenre} onValueChange={setNewGenre} />
+                <PickerWheel
+                    values={genreOptions}
+                    selectedValue={newGenre}
+                    onValueChange={setNewGenre}
+                />
+
                 <Text style={styles.label}>Status *</Text>
-                <PickerWheel values={statusOptions} selectedValue={newStatus} onValueChange={setNewStatus} />
+                <PickerWheel
+                    values={statusOptions}
+                    selectedValue={newStatus}
+                    onValueChange={setNewStatus}
+                />
 
                 {!nonCompletedStatuses.includes(newStatus) && (
                     <View>
                         <Text style={styles.label}>Date Beaten (Optional)</Text>
-                        <Pressable onPress={showDatePickerModal} style={styles.pickerTrigger}>
+                        <Pressable onPress={showDatePickerModal} style={({ pressed }) => [
+                            styles.pickerTrigger,
+                            pressed && styles.buttonPressed,
+                        ]}>
+                            <Ionicons name="calendar-outline" size={22} color={colors.textLight} style={{ marginRight: 8 }} />
                             <Text style={styles.pickerTriggerText}>
                                 {newDateBeaten ? formatDateForDisplay(newDateBeaten) : "Select Date"}
                             </Text>
-                            <Ionicons name="calendar-outline" size={22} color={colors.textSecondary} />
                         </Pressable>
                     </View>
                 )}
 
                 <Text style={styles.label}>Rating (Optional)</Text>
                 <Pressable onPress={openRatingModal} style={styles.pickerTrigger}>
+                    {!newRating && <Ionicons name="star-outline" size={22} color={colors.textLight} style={{ marginRight: 8 }} />}
                     {renderStarsForDisplay(newRating)}
                 </Pressable>
 
@@ -200,8 +219,15 @@ export default function EditGameScreen({ route, navigation }) {
                 {(newLocalImageUri || currentImageUrl) && (
                     <Image source={{ uri: newLocalImageUri ? newLocalImageUri : currentImageUrl }} style={styles.imagePreview} />
                 )}
-                <Pressable onPress={handleChooseImage} disabled={isSubmitting} style={styles.imageSelectButton}>
-                    <Text style={styles.imageSelectButtonText}>
+                <Pressable
+                    onPress={handleChooseImage}
+                    disabled={isSubmitting}
+                    style={({ pressed }) => [
+                        styles.pickerTrigger,
+                        pressed && styles.buttonPressed,
+                    ]}>
+                    <Ionicons name="image-outline" size={20} color={colors.textLight} style={{ marginRight: 8 }} />
+                    <Text style={styles.pickerTriggerText}>
                         {(newLocalImageUri || currentImageUrl) ? "Change Selected Image" : "Select Custom Image"}
                     </Text>
                 </Pressable>
@@ -210,7 +236,7 @@ export default function EditGameScreen({ route, navigation }) {
                 <TextInput
                     style={[styles.input, styles.textArea]}
                     placeholder="Any thoughts, tips, or memories..."
-                    placeholderTextColor={colors.placeholderText}
+                    placeholderTextColor={colors.placeholder}
                     value={newNotes}
                     onChangeText={setNewNotes}
                     multiline
@@ -220,7 +246,8 @@ export default function EditGameScreen({ route, navigation }) {
                 <View style={styles.submitButtonContainer}>
                     <Pressable
                         style={({ pressed }) => [
-                            styles.button, styles.submitButton,
+                            styles.button, 
+                            styles.submitButton,
                             pressed && styles.buttonPressed,
                             isSubmitting && styles.buttonDisabled,
                         ]}
@@ -252,111 +279,3 @@ export default function EditGameScreen({ route, navigation }) {
         </KeyboardAvoidingView>
     );
 }
-
-const styles = StyleSheet.create({
-    keyboardAvoidingContainer: {
-        flex: 1,
-        backgroundColor: colors.backgroundMain,
-    },
-    container: {
-        paddingHorizontal: 20,
-        paddingBottom: 40,
-        paddingTop: 10,
-    },
-    centeredMessageContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    messageText: {
-        fontSize: 16,
-        color: colors.textSecondary,
-    },
-    screenTitle: {
-        fontSize: 28, fontWeight: 'bold', color: colors.textPrimary,
-        textAlign: 'center', marginBottom: 30, marginTop: 10,
-    },
-    label: {
-        fontSize: 16, marginBottom: 8, marginTop: 15,
-        fontWeight: '600', color: colors.textPrimary,
-    },
-    input: {
-        backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
-        paddingHorizontal: 15, paddingVertical: 12, fontSize: 16,
-        borderRadius: 8, marginBottom: 15, color: colors.textPrimary,
-    },
-    textArea: { height: 100, textAlignVertical: 'top' },
-    pickerTrigger: {
-        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-        backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
-        paddingHorizontal: 15, paddingVertical: 12, borderRadius: 8,
-        marginBottom: 15, minHeight: 50,
-    },
-    pickerTriggerText: { fontSize: 16, color: colors.textPrimary },
-    placeholderTextPicker: { fontSize: 16, color: colors.placeholder },
-    starsRow: { flexDirection: 'row' },
-    starDisplay: { marginRight: 2 },
-    imagePreviewContainer: { alignItems: 'center', marginBottom: 10 },
-    imagePreviewStyle: {
-        width: '50%',
-        aspectRatio: 9 / 16,
-        backgroundColor: colors.placeholder,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    imagePlaceholder: {
-        width: '50%',
-        aspectRatio: 9 / 16,
-        backgroundColor: '#f0f0f0',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    imageSelectButton: {
-        flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-        backgroundColor: colors.secondary, paddingVertical: 12, paddingHorizontal: 20,
-        borderRadius: 8, marginBottom: 10, marginTop: 8,
-    },
-    imageActionButtonText: { color: colors.textLight, fontSize: 16, fontWeight: '500' },
-    submitButtonContainer: { marginTop: 30, marginBottom: 20 },
-    button: {
-        height: 50, borderRadius: 8, justifyContent: 'center', alignItems: 'center',
-        shadowColor: "#000", shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15, shadowRadius: 3.84, elevation: 3,
-    },
-    submitButton: { backgroundColor: colors.primary },
-    buttonText: { color: colors.textLight, fontSize: 18, fontWeight: '600' },
-    buttonPressed: { opacity: 0.8 },
-    buttonDisabled: { backgroundColor: colors.primary + '99' },
-    errorText: { fontSize: 18, color: colors.error, textAlign: 'center', marginTop: 50, },
-
-    imageSelectButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: colors.secondary,
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-        marginBottom: 15,
-        marginTop: 8,
-    },
-    imageSelectButtonText: {
-        color: colors.textLight,
-        fontSize: 16,
-        fontWeight: '500',
-    },
-    imagePreview: {
-        width: '50%',
-        aspectRatio: 9 / 16,
-        alignSelf: 'center',
-        marginBottom: 10,
-        backgroundColor: colors.placeholder,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-});

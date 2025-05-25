@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-    View, Text, StyleSheet, ScrollView, TextInput, Alert,
+    View, Text, ScrollView, TextInput, Alert,
     Pressable, Image, ActivityIndicator, KeyboardAvoidingView
 } from 'react-native';
 import { db, auth } from '../util/auth/firebaseConfig';
@@ -15,13 +15,14 @@ import PickerWheel from '../components/pickers/PickerWheel';
 import { platformOptions, genreOptions, statusOptions } from '../util/options';
 
 import colors from '../theme/colors';
+import styles from '../theme/AddEditGameStyles'
 
 const nonCompletedStatuses = ['Playing', 'On Hold', 'Not Started', 'Dropped'];
 
 export default function AddGameScreen({ navigation }) {
     const [title, setTitle] = useState('');
     const [platform, setPlatform] = useState(null);
-    const [genre, setGenre] = useState( null);
+    const [genre, setGenre] = useState(null);
     const [status, setStatus] = useState(null);
 
     const [rating, setRating] = useState(null);
@@ -62,8 +63,6 @@ export default function AddGameScreen({ navigation }) {
         chooseImageSourceAlert((uri) => {
             if (uri) {
                 setLocalImageUri(uri);
-            } else {
-                console.log("Image selection cancelled or no image picked.");
             }
         });
     };
@@ -99,8 +98,6 @@ export default function AddGameScreen({ navigation }) {
                 if (uploadResult) {
                     finalImageUrl = uploadResult.downloadURL;
                     finalImageStoragePath = uploadResult.storagePath;
-                } else {
-                    console.warn("Image upload failed or returned no result. Proceeding without custom image.");
                 }
             }
 
@@ -144,7 +141,7 @@ export default function AddGameScreen({ navigation }) {
                 <TextInput
                     style={styles.input}
                     placeholder="e.g., Cyberpunk 2077"
-                    placeholderTextColor={colors.placeholderText}
+                    placeholderTextColor={colors.placeholder}
                     value={title}
                     onChangeText={setTitle}
                 />
@@ -167,23 +164,30 @@ export default function AddGameScreen({ navigation }) {
                 <PickerWheel
                     values={statusOptions}
                     selectedValue={status}
-                    onValueChange={(itemValue) => setStatus(itemValue)}
+                    onValueChange={setStatus}
                 />
 
                 {status !== null && !nonCompletedStatuses.includes(status) && (
                     <View>
                         <Text style={styles.label}>Date Beaten (Optional)</Text>
-                        <Pressable onPress={showDatePickerModal} style={styles.pickerTrigger}>
+                        <Pressable onPress={showDatePickerModal} style={({ pressed }) => [
+                            styles.pickerTrigger,
+                            pressed && styles.buttonPressed,
+                        ]}>
+                            <Ionicons name="calendar-outline" size={22} color={colors.textLight} style={{ marginRight: 8 }} />
                             <Text style={styles.pickerTriggerText}>
                                 {dateBeaten ? formatDateForDisplay(dateBeaten) : "Select Date"}
                             </Text>
-                            <Ionicons name="calendar-outline" size={22} color={colors.textSecondary}/>
                         </Pressable>
                     </View>
                 )}
 
                 <Text style={styles.label}>Rating (Optional)</Text>
-                <Pressable onPress={openRatingModal} style={styles.pickerTrigger}>
+                <Pressable onPress={openRatingModal} style={({ pressed }) => [
+                    styles.pickerTrigger,
+                    pressed && styles.buttonPressed,
+                ]}>
+                    {!rating && <Ionicons name="star-outline" size={22} color={colors.textLight} style={{ marginRight: 8 }} />}
                     {renderStarsForDisplay(rating)}
                 </Pressable>
 
@@ -194,10 +198,12 @@ export default function AddGameScreen({ navigation }) {
                 <Pressable
                     onPress={handleChooseImage}
                     disabled={isSubmitting}
-                    style={styles.imageSelectButton}
-                >
-                    <Ionicons name="image-outline" size={20} color={colors.textLight} style={{marginRight: 8}}/>
-                    <Text style={styles.imageSelectButtonText}>
+                    style={({ pressed }) => [
+                        styles.pickerTrigger,
+                        pressed && styles.buttonPressed,
+                    ]}>
+                    <Ionicons name="image-outline" size={20} color={colors.textLight} style={{ marginRight: 8 }} />
+                    <Text style={styles.pickerTriggerText}>
                         {localImageUri ? "Change Image" : "Select Image"}
                     </Text>
                 </Pressable>
@@ -206,7 +212,7 @@ export default function AddGameScreen({ navigation }) {
                 <TextInput
                     style={[styles.input, styles.textArea]}
                     placeholder="Any thoughts, tips, or memories..."
-                    placeholderTextColor={colors.placeholderText}
+                    placeholderTextColor={colors.placeholder}
                     value={notes}
                     onChangeText={setNotes}
                     multiline
@@ -216,8 +222,8 @@ export default function AddGameScreen({ navigation }) {
                 <View style={styles.submitButtonContainer}>
                     <Pressable
                         style={({ pressed }) => [
-                            styles.button, // General button style
-                            styles.submitButton, // Specific submit button style
+                            styles.button,
+                            styles.submitButton,
                             pressed && styles.buttonPressed,
                             isSubmitting && styles.buttonDisabled,
                         ]}
@@ -249,128 +255,3 @@ export default function AddGameScreen({ navigation }) {
         </KeyboardAvoidingView>
     );
 }
-
-const styles = StyleSheet.create({
-    keyboardAvoidingContainer: {
-        flex: 1,
-        backgroundColor: colors.backgroundMain,
-    },
-    container: {
-        paddingHorizontal: 20,
-        paddingBottom: 40,
-        paddingTop: 10,
-    },
-    screenTitle: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: colors.textPrimary,
-        textAlign: 'center',
-        marginBottom: 30,
-        marginTop: 10,
-    },
-    label: {
-        fontSize: 16,
-        marginBottom: 8,
-        marginTop: 15,
-        fontWeight: '600',
-        color: colors.textPrimary,
-    },
-    input: {
-        backgroundColor: colors.surface,
-        borderWidth: 1,
-        borderColor: colors.border,
-        paddingHorizontal: 15,
-        paddingVertical: 12,
-        fontSize: 16,
-        borderRadius: 8,
-        marginBottom: 15,
-        color: colors.textPrimary,
-    },
-    textArea: {
-        height: 100,
-        textAlignVertical: 'top',
-    },
-    pickerTrigger: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: colors.surface,
-        borderWidth: 1,
-        borderColor: colors.border,
-        paddingHorizontal: 15,
-        paddingVertical: 12,
-        borderRadius: 8,
-        marginBottom: 15,
-        minHeight: 50,
-    },
-    pickerTriggerText: {
-        fontSize: 16,
-        color: colors.textPrimary,
-    },
-    placeholderTextPicker: {
-        fontSize: 16,
-        color: colors.placeholderText,
-    },
-    starsRow: {
-        flexDirection: 'row',
-    },
-    starDisplay: {
-        marginRight: 2,
-    },
-    imageSelectButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: colors.secondary,
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-        marginBottom: 15,
-        marginTop: 8,
-    },
-    imageSelectButtonText: {
-        color: colors.textLight,
-        fontSize: 16,
-        fontWeight: '500',
-    },
-    imagePreview: {
-        width: '50%',
-        aspectRatio: 9 / 16,
-        alignSelf: 'center',
-        marginBottom: 10,
-        backgroundColor: colors.placeholder,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    submitButtonContainer: {
-        marginTop: 30,
-        marginBottom: 20,
-    },
-
-    button: {
-        height: 50,
-        borderRadius: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2, },
-        shadowOpacity: 0.15,
-        shadowRadius: 3.84,
-        elevation: 3,
-    },
-    submitButton: {
-        backgroundColor: colors.primary,
-    },
-    buttonText: {
-        color: colors.textLight,
-        fontSize: 18,
-        fontWeight: '600',
-    },
-    buttonPressed: {
-        opacity: 0.8,
-    },
-    buttonDisabled: {
-        backgroundColor: colors.primary + '99',
-    }
-});

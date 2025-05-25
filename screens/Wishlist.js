@@ -106,9 +106,6 @@ export default function WishlistScreen({ navigation }) {
     );
 
     const handleAddToLibrary = (gameDetails) => {
-
-        console.log("Added to library", gameDetails)
-
         const currentUser = auth.currentUser;
         if (!currentUser) {
             Alert.alert('Not Authenticated', 'You must be logged in to add a game.');
@@ -149,8 +146,6 @@ export default function WishlistScreen({ navigation }) {
 
                             Alert.alert("Success", `"${gameDetails.title}" has been added to your library.`);
                         } catch (error) {
-                            console.log(error);
-
                             Alert.alert("Error", "Could not add game. Please try again.");
                         } finally {
                         }
@@ -202,10 +197,10 @@ export default function WishlistScreen({ navigation }) {
                 leftOpenValue={150}
                 rightOpenValue={-100}
                 previewRowKey={wishlist?.docs && wishlist.docs.length > 0 ? wishlist.docs[0].id : ''}
-                previewOpenValue={-40}
+                previewOpenValue={40}
                 previewOpenDelay={3000}
-                disableRightSwipe={false}
-                disableLeftSwipe={false}
+                previewRepeat={true}
+                previewRepeatDelay={2000}
             />
         </View>
     );
@@ -246,33 +241,27 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     emptyTitle: {
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: 'bold',
         color: colors.textPrimary,
-        marginBottom: 12,
+        marginBottom: 10,
         textAlign: 'center',
     },
     emptySubtitle: {
-        fontSize: 16,
+        fontSize: 15,
         color: colors.textSecondary,
         textAlign: 'center',
-        marginBottom: 30,
-        paddingHorizontal: 20,
-        lineHeight: 22,
+        marginBottom: 20,
+        paddingHorizontal: 10,
     },
     themedButton: {
-        paddingVertical: 12,
-        paddingHorizontal: 30,
+        paddingVertical: 10,
+        paddingHorizontal: 25,
         borderRadius: 25,
-        marginTop: 10,
+        marginTop: 15,
         alignItems: 'center',
         justifyContent: 'center',
-        minWidth: 200,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 2,
+        backgroundColor: colors.primary,
     },
     themedButtonText: {
         color: colors.textLight,

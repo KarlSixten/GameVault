@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, Image } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import colors from '../theme/colors';
 
 const GameCard = ({ game }) => {
     if (!game) {
@@ -14,33 +15,37 @@ const GameCard = ({ game }) => {
         <View style={styles.card}>
             <View style={styles.textContentContainer}>
                 <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">{game.title || 'No Title'}</Text>
-                <Text style={styles.platform} numberOfLines={1} ellipsizeMode="tail">{game.platform || 'N/A Platform'}</Text>
+                {game.platform && <Text style={styles.platform}>{game.platform}</Text>}
 
-                <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Genre:</Text>
-                    <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="tail">{game.genre || 'N/A'}</Text>
-                </View>
+                {game.genre &&
+                    <View style={styles.detailRow}>
+                        <Text style={styles.detailLabel}>Genre:</Text>
+                        <Text style={styles.detailValue}>{game.genre || 'N/A'}</Text>
+                    </View>
+                }
 
                 {game.status && (
                     <View style={styles.detailRow}>
                         <Text style={styles.detailLabel}>Status:</Text>
-                        <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="tail">{game.status}</Text>
+                        <Text style={styles.detailValue}>{game.status}</Text>
                     </View>
                 )}
 
                 {game.rating && game.rating !== null && (
-                    <View style={styles.ratingContainer}>
-                        <Text style={styles.detailLabel}>Rating:</Text>
-                        <View style={styles.starsWrapper}>
-                            {[...Array(5)].map((_, index) => (
-                                <Ionicons
-                                    key={index}
-                                    name={index < game.rating ? 'star' : 'star-outline'}
-                                    size={20}
-                                    color="#FFC107"
-                                    style={styles.starIcon}
-                                />
-                            ))}
+                    <View style={styles.detailRow}>
+                        <View style={styles.ratingContainer}>
+                            <Text style={styles.detailLabel}>Rating:</Text>
+                            <View style={styles.starsWrapper}>
+                                {[...Array(5)].map((_, index) => (
+                                    <Ionicons
+                                        key={index}
+                                        name={index < game.rating ? 'star' : 'star-outline'}
+                                        size={20}
+                                        color={colors.accent}
+                                        style={styles.starIcon}
+                                    />
+                                ))}
+                            </View>
                         </View>
                     </View>
                 )}
@@ -58,18 +63,18 @@ const GameCard = ({ game }) => {
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: '#ffffff',
+        backgroundColor: colors.backgroundPaper,
         padding: 16,
         marginVertical: 8,
         marginHorizontal: 16,
         borderRadius: 10,
-        shadowColor: '#000000',
+        shadowColor: colors.backgroundDark,
         shadowOffset: {
             width: 0,
             height: 2,
         },
-        shadowOpacity: 0.15,
-        shadowRadius: 3.84,
+        shadowOpacity: 0.1,
+        shadowRadius: 3.00,
         flexDirection: 'row',
         alignItems: 'flex-start',
     },
@@ -82,17 +87,17 @@ const styles = StyleSheet.create({
         height: 80,
         borderRadius: 6,
         resizeMode: 'cover',
-        backgroundColor: '#e0e0e0',
+        backgroundColor: colors.placeholder,
     },
     title: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#333333',
+        color: colors.textPrimary,
         marginBottom: 3,
     },
     platform: {
         fontSize: 14,
-        color: '#555555',
+        color: colors.textSecondary,
         marginBottom: 10,
     },
     detailRow: {
@@ -102,13 +107,13 @@ const styles = StyleSheet.create({
     },
     detailLabel: {
         fontSize: 13,
-        color: '#444444',
+        color: colors.textSecondary,
         fontWeight: '600',
         marginRight: 4,
     },
     detailValue: {
         fontSize: 13,
-        color: '#666666',
+        color: colors.textPrimary,
         flexShrink: 1,
     },
     ratingContainer: {
@@ -119,9 +124,6 @@ const styles = StyleSheet.create({
     },
     starsWrapper: {
         flexDirection: 'row',
-    },
-    starIcon: {
-        marginRight: 1,
     },
 });
 
