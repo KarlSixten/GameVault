@@ -51,7 +51,7 @@ This project was developed as an exam project for mobile development with React 
 
 1.  **Clone the repository**:
     ```bash
-    git clone [https://github.com/your-username/GameVault.git](https://github.com/your-username/GameVault.git)
+    git clone [https://github.com/karlsixten/GameVault.git](https://github.com/karlsixten/GameVault.git)
     cd GameVault
     ```
 2.  **Install dependencies**:
